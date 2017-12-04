@@ -1,3 +1,7 @@
+# Project specific ignore statements
+generate_data
+
+# GitHub generated ignore statements
 *.i
 *.ii
 *.gpu

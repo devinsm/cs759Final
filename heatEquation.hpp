@@ -23,8 +23,6 @@
 struct HeatProblem1d {
 	int l; //Length of the rod
 	float alpha; //Thermal diffusivity
-	float deltaT; //Distance between time points
-	float deltaX; //distance between discrete points on rod
 	float leftTemp; //Temperature at left end of rod (held constant)
 	float rightTemp; //Temperature at right end of rod (held constant)
 
@@ -34,22 +32,33 @@ struct HeatProblem1d {
 
 	//Constructor
 	HeatProblem1d(int l, float alpha, float deltaT, float deltaX, float leftTemp, float rightTemp,float (*initFunction)(float)):
-	l(l), alpha(alpha), deltaT(deltaT), deltaX(deltaX), leftTemp(leftTemp), rightTemp(rightTemp), initFunction(initFunction) {};
+	l(l), alpha(alpha), leftTemp(leftTemp), rightTemp(rightTemp), initFunction(initFunction) {};
+};
+
+struct SimulationParams1D {
+	float deltaX; //Space between discrete points on "rod" used for calculations.
+	float deltaT; //Time between iterations of finite difference calculations/updates of state.
+	int numIterations; //Number of times finite difference calculations will be carried out.
+
+	//The number of time intervals that will be allowed to elapse between succesive writes
+	//to output data structure.
+	int periodOfRecordings;
 };
 
 /**
  *Numerically sloves the given heat equation problem and returns a pointer to the
  *desired data.
  *
- *@param problemParameters A struct containing all the information needed to solve the problem.
- *@param everyXMoments The number of time intervals that will be allowed to elapse between
- succesive recordings of state.
- *@param
+ *@param problemParameters A struct wich describes the problem to be solved.
+ *@param simulationParams A struct which describes the parameters of the FDM.
+ *
  *@return A pointer to the a 2d array holding the state of the system at periodic moments in
- *time. The moments will be t = 0, t = everyXMoments, t = 2 * everyXMoments, etc. If A is
- 
+ *time. The array will be in row major order and allocated with new. The moments will be t = 0,
+ *t = everyXMoments * deltaT, t = 2 * everyXMoments * deltaT, etc. If A is the returned array, then A[n][j] is
+ *the temperature at the jth position along the "rod" at the time n * everyXMoments * deltaT.
+ *In other words elements of rows are recordings at a moment in time.
 */
-__host__ float *sloveProblemInstance(HeatProblem1d problemParameters, std::string fileName) {
+__host__ float *sloveProblemInstance(HeatProblem1d problemParams, SimulationParams1D simulationParams) {
 	//Malloc the memory to store the results on the host
 	//Invoke the kernel
 	//copy back the data

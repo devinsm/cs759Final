@@ -16,5 +16,9 @@ struct HeatProblem1d {
 	float leftTemp; //Temperature at left end of rod (held constant)
 	float rightTemp; //Temperature at right end of rod (held constant)
 	float (*initFunction)(float position); //Pointer to function which provides starting temps
+
+	//Constructor
+	HeatProblem1d(int l, float alpha, float deltaT, float deltaX, float leftTemp, float rightTemp,float (*initFunction)(float)):
+	l(l), alpha(alpha), deltaT(deltaT), deltaX(deltaX), leftTemp(leftTemp), rightTemp(rightTemp), initFunction(initFunction) {};
 };
 #endif

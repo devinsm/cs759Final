@@ -16,7 +16,12 @@
 using std::cout;
 using std::endl;
 
+__device__ float initFunction1(float position) {
+	return .1f;
+}
+
 int main(int argc, char const *argv[]) {
 	cout << "TODO: implement main" << endl;
+	HeatProblem1d(1, 1, .001, .1, 0, 0, initFunction1);
 	return 0;
 }

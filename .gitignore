@@ -1,5 +1,7 @@
 # Project specific ignore statements
 generate_data
+sbatch.out
+sbatch.err
 
 # GitHub generated ignore statements
 *.i

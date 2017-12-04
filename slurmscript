@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#SBATCH --partition=slurm_shortgpu
+#SBATCH --time=0-00:10:00 # run time in days-hh:mm:ss
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=4
+#SBATCH --error=/srv/home/mcallester/cs759Final/sbatch.err
+#SBATCH --output=/srv/home/mcallester/cs759Final/sbatch.out
+#SBATCH --gres=gpu:1
+
+make
+./generate_data

@@ -57,10 +57,11 @@ struct SimulationParams1D {
  *
  *@param devicePointer A reference to a pointer to store the address of the device memory.
  *@param hostPointer A reference to a pointer to store the address of the host memory.
- *@param numBytes The number of bytes to allocate.
+ *@param numFloats The number of floats which will be output by the simulation.
 */
-__host__ void allocateOutPutMem(float *devicePointer, float *hostPointer, int numBytes) {
-
+__host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, int numFloats) {
+	CudaSafeCall(cudaMalloc(&devicePointer, sizeof(float) * numFloats));
+	hostPointer = new float[numFloats];
 }
 /**
  *Numerically sloves the given heat equation problem and returns a pointer to the
@@ -84,7 +85,7 @@ __host__ float *sloveProblemInstance(HeatProblem1d problemParams, SimulationPara
 	//number of moments in time (including 0 and last moment)
 	const int numberOfMoments = simParams.numIterations + 1;
 
-	const int sizeOfOutPutMem = sizeof(float) * numberOfMoments * numberOfXPoints;
+	const int sizeOfOutPutArray = numberOfMoments * numberOfXPoints;
 
 	std::cout << "Number of position points: " << numberOfXPoints << std::endl;
 	std::cout << "Number of time points: " << numberOfMoments << std::endl;

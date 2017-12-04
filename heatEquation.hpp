@@ -17,8 +17,13 @@
 // #include <cstring>
 // #include <stdexcept>
 
+//Project specific include statements
+#include "errorMacros.hpp"
+
 //GPU library include statements
 #include <cuda.h>
+
+#define CUDA_ERROR_CHECK //turn on error checking
 
 
 struct HeatProblem1d {
@@ -48,9 +53,15 @@ struct SimulationParams1D {
 
 /**
  *Allocates memory on the host (by calling new) and on the device (by calling cudaMalloc)
- *to store the output of
+ *to store the output of the simulation.
+ *
+ *@param devicePointer A reference to a pointer to store the address of the device memory.
+ *@param hostPointer A reference to a pointer to store the address of the host memory.
+ *@param numBytes The number of bytes to allocate.
 */
+__host__ void allocateOutPutMem(float *devicePointer, float *hostPointer, int numBytes) {
 
+}
 /**
  *Numerically sloves the given heat equation problem and returns a pointer to the
  *desired data.
@@ -79,8 +90,9 @@ __host__ float *sloveProblemInstance(HeatProblem1d problemParams, SimulationPara
 	std::cout << "Number of time points: " << numberOfMoments << std::endl;
 	std::cout << "Size of output memory: " << sizeOfOutPutMem << std::endl;
 
-	// float *deviceOutPut, *hostOutPut;
-	// allocateOutPutMem(deviceOutPut, hostOutPut);
+	float *deviceOutPut = nullptr;
+	float *hostOutPut = nullptr;
+	allocateOutPutMem(deviceOutPut, hostOutPut, sizeOfOutPutMem);
 
 	//Invoke the kernel
 	//copy back the data

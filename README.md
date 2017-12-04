@@ -34,3 +34,9 @@ points) periodically to the file.
 
 ##### Potential Problems With The Above:
 + Can you have a struct store a function object which is supplied at runtime?
+	- Answer: Yes (just use a function pointer).
++ Printing out the data (to a file or to the console) from the GPU would absolutely
+destroy the performance of the program. So in order to avoid that I should have
+the device code store the data in global memory and then the host code can copy it back
+over to the CPU. This also will make the code more flexible when I write the code to
+do the graphics.

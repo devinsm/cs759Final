@@ -29,10 +29,6 @@ struct HeatProblem1d {
 	//Pointer to function which provides starting temps
 	//This function must be declared with device!
 	float (*initFunction)(float position);
-
-	//Constructor
-	HeatProblem1d(int l, float alpha, float deltaT, float deltaX, float leftTemp, float rightTemp,float (*initFunction)(float)):
-	l(l), alpha(alpha), leftTemp(leftTemp), rightTemp(rightTemp), initFunction(initFunction) {};
 };
 
 struct SimulationParams1D {
@@ -62,5 +58,7 @@ __host__ float *sloveProblemInstance(HeatProblem1d problemParams, SimulationPara
 	//Malloc the memory to store the results on the host
 	//Invoke the kernel
 	//copy back the data
+
+	return new float;
 }
 #endif

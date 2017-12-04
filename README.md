@@ -40,3 +40,8 @@ destroy the performance of the program. So in order to avoid that I should have
 the device code store the data in global memory and then the host code can copy it back
 over to the CPU. This also will make the code more flexible when I write the code to
 do the graphics.
+
+### Miscellaneous Notes
++ I added a struct to hold parameters of the simulation. I did this because the problem
+(specified by length, starting temp, alpha, etc.) is independent of how I will solve it.
+Thus I removed k and h from original struct and made a new struct with all the simulation params.

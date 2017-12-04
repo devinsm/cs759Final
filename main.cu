@@ -21,7 +21,6 @@ __device__ float initFunction1(float position) {
 }
 
 int main(int argc, char const *argv[]) {
-	cout << "TODO: implement main" << endl;
 	HeatProblem1d problem1;
 	problem1.l = 1;
 	problem1.alpha = 1;
@@ -30,7 +29,7 @@ int main(int argc, char const *argv[]) {
 	problem1.initFunction = initFunction1;
 
 	SimulationParams1D simParams1;
-	simParams1.deltaX = .1;
+	simParams1.deltaX = .15;
 	simParams1.deltaT = .001;
 	simParams1.numIterations = 20;
 	simParams1.periodOfRecordings = 1;

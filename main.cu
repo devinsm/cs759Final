@@ -24,8 +24,19 @@ struct TestFunctor {
 	};
 };
 
+struct SmithFunctor {
+	__host__ __device__
+	float operator() (float position) {
+		if (position <= .5) {
+			return 2 * position;
+		} else {
+			return 2 * (1 - position);
+		}
+	};
+};
+
 int main(int argc, char const *argv[]) {
-	HeatProblem1d<TestFunctor> problem1;
+	HeatProblem1d<SmithFunctor> problem1;
 	problem1.l = 1;
 	problem1.alpha = 1;
 	problem1.leftTemp = 0;

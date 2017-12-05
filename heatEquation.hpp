@@ -21,7 +21,7 @@
 #include <cuda.h>
 
 #define CUDA_ERROR_CHECK //turn on error checking
-#define BLOCK_SIZE 512;
+#define BLOCK_SIZE 512
 
 
 struct HeatProblem1d {
@@ -49,17 +49,28 @@ struct SimulationParams1D {
 	int periodOfRecordings;
 };
 /**
+ *Gives the index into a 2d array stored in row major order.
+ *
+ *@param rowIdx The index of the row.
+ *@param colIdx The index of the col.
+ *@param numCols The number of columns in a row.
+ *@return The index in the 1d representation.
+*/
+__host__ __device__ inline int realIdx(int rowIdx, int colIdx, int numCols) {
+	return rowIdx * numCols + colIdx;
+}
+/**
  *Prints a 2D array in a table.
  *
  *@param array A pointer to the array (which should be in row major order).
  *@param numCols The number of columns.
  *@param numRows The number of rows.
 */
-void print2dArray(float *array, int numCols, int numRows) {
+__host__ void print2dArray(float *array, int numCols, int numRows) {
 	std::cout << std::fixed << std::setprecision(4) << std::right;
 	for (size_t i = 0; i < numRows; i++) {
 		for (size_t j = 0; j < numCols; j++) {
-			std::cout << std::setw(7) << hostOutPut[i][j];
+			std::cout << std::setw(7) << array[realIdx(i, j, numCols)];
 		}
 		std::cout << std::endl;
 	}
@@ -88,13 +99,13 @@ __global__ void sloveProblemInstanceDevice(HeatProblem1d problemParams, Simulati
 	float point = column * simParams.deltaX;
 
 	if (column == 0) {
-		workingMem[0][0] = problemParams.leftTemp;
+		workingMem[realIdx(0, 0, numCols)] = problemParams.leftTemp;
 	} else if (column == numCols - 1) {
-		workingMem[0][numCols - 1] = problemParams.rightTemp;
+		workingMem[realIdx(0, column, numCols)] = problemParams.rightTemp;
 	} else {
-		workingMem[0][column] = simParams.initFunction(point);
+		workingMem[realIdx(0, column, numCols)] = problemParams.initFunction(point);
 	}
-	outPut[0][column] = workingMem[0][column];
+	outPut[realIdx(0, column, numCols)] = workingMem[realIdx(0, column, numCols)];
 	__syncthreads();
 
 	int j = 1;
@@ -102,15 +113,15 @@ __global__ void sloveProblemInstanceDevice(HeatProblem1d problemParams, Simulati
 	int thisTime = 1;
 	for (int i = 1; i <= simParams.numIterations; i++) {
 		if (column == 0) {
-			workingMem[thisTime][0] = problemParams.leftTemp;
+			workingMem[realIdx(thisTime, 0, numCols)] = problemParams.leftTemp;
 		} else if (column == numCols - 1) {
-			workingMem[thisTime][numCols - 1] = problemParams.rightTemp;
+			workingMem[realIdx(thisTime, column, numCols)] = problemParams.rightTemp;
 		} else {
-			workingMem[thisTime][column] = simParams.initFunction(point);
+			workingMem[realIdx(thisTime, column, numCols)] = problemParams.initFunction(point);
 		}
 
 		if (i % simParams.periodOfRecordings == 0) {
-			outPut[j][column] = workingMem[thisTime][column];
+			outPut[realIdx(j, column, numCols)] = workingMem[realIdx(thisTime, column, numCols)];
 			j++;
 		}
 
@@ -168,7 +179,7 @@ __host__ float *sloveProblemInstance(HeatProblem1d problemParams, SimulationPara
 	float *workingMem = nullptr;
 	CudaSafeCall(cudaMalloc(&workingMem, numberOfXPoints * 2 * sizeof(float)));
 
-	int numBlocks = BLOCK_SIZE + numberOfXPoints - 1 / numberOfXPoints;
+	int numBlocks = (BLOCK_SIZE + numberOfXPoints - 1) / numberOfXPoints;
 	sloveProblemInstanceDevice<<<numBlocks, BLOCK_SIZE>>>(problemParams, simParams, deviceOutPut, workingMem, numberOfXPoints);
 
 	//copy back the data

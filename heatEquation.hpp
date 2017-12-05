@@ -89,11 +89,11 @@ __host__ float *sloveProblemInstance(HeatProblem1d problemParams, SimulationPara
 
 	std::cout << "Number of position points: " << numberOfXPoints << std::endl;
 	std::cout << "Number of time points: " << numberOfMoments << std::endl;
-	std::cout << "Size of output memory: " << sizeOfOutPutMem << std::endl;
+	std::cout << "Size of output memory: " << sizeOfOutPutArray << std::endl;
 
 	float *deviceOutPut = nullptr;
 	float *hostOutPut = nullptr;
-	allocateOutPutMem(deviceOutPut, hostOutPut, sizeOfOutPutMem);
+	allocateOutPutMem(deviceOutPut, hostOutPut, sizeOfOutPutArray);
 
 	//Invoke the kernel
 	//copy back the data

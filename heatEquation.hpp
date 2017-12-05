@@ -31,7 +31,7 @@ struct HeatProblem1d {
 	float rightTemp; //Temperature at right end of rod (held constant)
 
 	//Functor which provides starting temps. operator() should be declared with
-	//__host__ and __device__. It should take a float and return a float
+	//__host__ and __device__. It should take a float and return a float.
 	FunctorType initFunction;
 };
 
@@ -95,6 +95,7 @@ __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, Simul
 	if (column >= numCols) {
 		return;
 	}
+	const float r = (problemParams.alpha * simParams.deltaT) / (simParams.deltaX * simParams.deltaX);
 
 	//not valid if column == numCols - 1
 	float point = column * simParams.deltaX;
@@ -118,7 +119,10 @@ __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, Simul
 		} else if (column == numCols - 1) {
 			workingMem[realIdx(thisTime, column, numCols)] = problemParams.rightTemp;
 		} else {
-			workingMem[realIdx(thisTime, column, numCols)] = problemParams.initFunction(point);
+			float *addrLastTime = &workingMem[realIdx(lastTime, column, numCols)];
+			float newVal = (1 - 2 * r) * *addrLastTime + r * *(addrLastTime - 1) + r * *(addrLastTime + 1);
+
+			workingMem[realIdx(thisTime, column, numCols)] = newVal;
 		}
 
 		if (i % simParams.periodOfRecordings == 0) {

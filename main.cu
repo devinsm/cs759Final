@@ -16,17 +16,20 @@
 using std::cout;
 using std::endl;
 
-__device__ float initFunction1(float position) {
-	return .1f;
-}
+struct TestFunctor {
+	int i = 1;
+	__host__ __device__
+	float operator() (float position) {
+		return position * i++;
+	};
+};
 
 int main(int argc, char const *argv[]) {
-	HeatProblem1d problem1;
+	HeatProblem1d<TestFunctor> problem1;
 	problem1.l = 1;
 	problem1.alpha = 1;
 	problem1.leftTemp = 0;
 	problem1.rightTemp = 0;
-	problem1.initFunction = initFunction1;
 
 	SimulationParams1D simParams1;
 	simParams1.deltaX = .15;

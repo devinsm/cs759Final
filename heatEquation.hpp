@@ -23,7 +23,7 @@
 #define CUDA_ERROR_CHECK //turn on error checking
 #define BLOCK_SIZE 512
 
-
+template <typename FunctorType>
 struct HeatProblem1d {
 	float l; //Length of the rod
 	float alpha; //Thermal diffusivity
@@ -32,7 +32,7 @@ struct HeatProblem1d {
 
 	//Pointer to function which provides starting temps
 	//This function must be declared with device!
-	float (*initFunction)(float position);
+	FunctorType initFunction;
 };
 
 struct SimulationParams1D {
@@ -88,7 +88,8 @@ __host__ void print2dArray(float *array, int numCols, int numRows) {
  *@param output A pointer to the global memory where the result will be stored.
  *@param numCols The number of columns in the output array.
 */
-__global__ void sloveProblemInstanceDevice(HeatProblem1d problemParams, SimulationParams1D simParams,
+template <typename T>
+__global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, SimulationParams1D simParams,
 																					float *outPut, float* workingMem, int numCols) {
 	int column = blockDim.x * blockIdx.x + threadIdx.x;
 	if (column >= numCols) {
@@ -156,7 +157,8 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, in
  *the temperature at the jth position along the "rod" at the time n * everyXMoments * deltaT.
  *In other words elements of rows are recordings at a moment in time.
 */
-__host__ float *sloveProblemInstance(HeatProblem1d problemParams, SimulationParams1D simParams) {
+template <typename T>
+__host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams, SimulationParams1D simParams) {
 	//Malloc the memory to store the results on the host
 
 	//number of discrete points (we always include the ends of the rod)

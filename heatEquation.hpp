@@ -30,8 +30,8 @@ struct HeatProblem1d {
 	float leftTemp; //Temperature at left end of rod (held constant)
 	float rightTemp; //Temperature at right end of rod (held constant)
 
-	//Pointer to function which provides starting temps
-	//This function must be declared with device!
+	//Functor which provides starting temps. operator() should be declared with
+	//__host__ and __device__. It should take a float and return a float
 	FunctorType initFunction;
 };
 
@@ -70,7 +70,7 @@ __host__ void print2dArray(float *array, int numCols, int numRows) {
 	std::cout << std::fixed << std::setprecision(4) << std::right;
 	for (size_t i = 0; i < numRows; i++) {
 		for (size_t j = 0; j < numCols; j++) {
-			std::cout << std::setw(7) << array[realIdx(i, j, numCols)];
+			std::cout << std::setw(10) << array[realIdx(i, j, numCols)];
 		}
 		std::cout << std::endl;
 	}

@@ -11,11 +11,8 @@
 //C++ include statements
 #include <iostream>
 #include <cmath>
-// #include <fstream>
-#include <string>
-// #include <cerrno>
-// #include <cstring>
-// #include <stdexcept>
+#include <ios>
+#include <iomanip>
 
 //Project specific include statements
 #include "errorMacros.hpp"
@@ -24,6 +21,7 @@
 #include <cuda.h>
 
 #define CUDA_ERROR_CHECK //turn on error checking
+#define BLOCK_SIZE 512;
 
 
 struct HeatProblem1d {
@@ -50,6 +48,77 @@ struct SimulationParams1D {
 	//to output data structure.
 	int periodOfRecordings;
 };
+/**
+ *Prints a 2D array in a table.
+ *
+ *@param array A pointer to the array (which should be in row major order).
+ *@param numCols The number of columns.
+ *@param numRows The number of rows.
+*/
+void print2dArray(float *array, int numCols, int numRows) {
+	std::cout << std::fixed << std::setprecision(4) << std::right;
+	for (size_t i = 0; i < numRows; i++) {
+		for (size_t j = 0; j < numCols; j++) {
+			std::cout << std::setw(7) << hostOutPut[i][j];
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::setprecision(6) << std::defaultfloat; //revert to defaults
+}
+
+/**
+ *The kernel which is called to actually carry out the simulation. See sloveProblemInstance
+ *for details of what is stored in outPut.
+ *
+ *@param problemParams A struct which describes the problem being solved.
+ *@param simParams Parameters of the simulation.
+ *@param workingMem A 2D array in which threads can store the state at every iteration.
+ *It should have the same number of columns as outPut, but only 2 rows.
+ *@param output A pointer to the global memory where the result will be stored.
+ *@param numCols The number of columns in the output array.
+*/
+__global__ void sloveProblemInstanceDevice(HeatProblem1d problemParams, SimulationParams1D simParams,
+																					float *outPut, float* workingMem, int numCols) {
+	int column = blockDim.x * blockIdx.x + threadIdx.x;
+	if (column >= numCols) {
+		return;
+	}
+
+	//not valid if column == numCols - 1
+	float point = column * simParams.deltaX;
+
+	if (column == 0) {
+		workingMem[0][0] = problemParams.leftTemp;
+	} else if (column == numCols - 1) {
+		workingMem[0][numCols - 1] = problemParams.rightTemp;
+	} else {
+		workingMem[0][column] = simParams.initFunction(point);
+	}
+	outPut[0][column] = workingMem[0][column];
+	__syncthreads();
+
+	int j = 1;
+	int lastTime = 0;
+	int thisTime = 1;
+	for (int i = 1; i <= simParams.numIterations; i++) {
+		if (column == 0) {
+			workingMem[thisTime][0] = problemParams.leftTemp;
+		} else if (column == numCols - 1) {
+			workingMem[thisTime][numCols - 1] = problemParams.rightTemp;
+		} else {
+			workingMem[thisTime][column] = simParams.initFunction(point);
+		}
+
+		if (i % simParams.periodOfRecordings == 0) {
+			outPut[j][column] = workingMem[thisTime][column];
+			j++;
+		}
+
+		lastTime = 1 - lastTime;
+		thisTime = 1 - thisTime;
+		__syncthreads();
+	}
+}
 
 /**
  *Allocates memory on the host (by calling new) and on the device (by calling cudaMalloc)
@@ -67,12 +136,12 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, in
  *Numerically sloves the given heat equation problem and returns a pointer to the
  *desired data.
  *
- *@param problemParameters A struct wich describes the problem to be solved.
- *@param simulationParams A struct which describes the parameters of the FDM.
+ *@param problemParameters A struct which describes the problem to be solved.
+ *@param simParams A struct which describes the parameters of the FDM.
  *
  *@return A pointer to the a 2d array holding the state of the system at periodic moments in
  *time. The array will be in row major order and allocated with new. The moments will be t = 0,
- *t = everyXMoments * deltaT, t = 2 * everyXMoments * deltaT, etc. If A is the returned array, then A[n][j] is
+ *t = periodOfRecordings * deltaT, t = 2 * periodOfRecordings * deltaT, etc. If A is the returned array, then A[n][j] is
  *the temperature at the jth position along the "rod" at the time n * everyXMoments * deltaT.
  *In other words elements of rows are recordings at a moment in time.
 */
@@ -83,12 +152,12 @@ __host__ float *sloveProblemInstance(HeatProblem1d problemParams, SimulationPara
 	const int numberOfXPoints = ceil((problemParams.l / simParams.deltaX) + 1);
 
 	//number of moments in time (including 0 and last moment)
-	const int numberOfMoments = simParams.numIterations + 1;
+	const int numberOfMoments = simParams.numIterations / simParams.periodOfRecordings + 1;
 
 	const int sizeOfOutPutArray = numberOfMoments * numberOfXPoints;
 
 	std::cout << "Number of position points: " << numberOfXPoints << std::endl;
-	std::cout << "Number of time points: " << numberOfMoments << std::endl;
+	std::cout << "Number of time points recorded: " << numberOfMoments << std::endl;
 	std::cout << "Size of output memory: " << sizeOfOutPutArray << std::endl;
 
 	float *deviceOutPut = nullptr;
@@ -96,7 +165,16 @@ __host__ float *sloveProblemInstance(HeatProblem1d problemParams, SimulationPara
 	allocateOutPutMem(deviceOutPut, hostOutPut, sizeOfOutPutArray);
 
 	//Invoke the kernel
+	float *workingMem = nullptr;
+	CudaSafeCall(cudaMalloc(&workingMem, numberOfXPoints * 2 * sizeof(float)));
+
+	int numBlocks = BLOCK_SIZE + numberOfXPoints - 1 / numberOfXPoints;
+	sloveProblemInstanceDevice<<<numBlocks, BLOCK_SIZE>>>(problemParams, simParams, deviceOutPut, workingMem, numberOfXPoints);
+
 	//copy back the data
+	cudaMemcpy(hostOutPut, deviceOutPut, sizeOfOutPutArray * sizeof(float), cudaMemcpyDeviceToHost);
+
+	print2dArray(hostOutPut, numberOfXPoints, numberOfMoments);
 
 	return new float;
 }

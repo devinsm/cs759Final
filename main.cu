@@ -43,7 +43,7 @@ int main(int argc, char const *argv[]) {
 	problem1.rightTemp = 0;
 
 	SimulationParams1D simParams1;
-	simParams1.deltaX = .15;
+	simParams1.deltaX = .1;
 	simParams1.deltaT = .001;
 	simParams1.numIterations = 20;
 	simParams1.periodOfRecordings = 1;

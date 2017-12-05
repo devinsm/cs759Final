@@ -187,6 +187,6 @@ __host__ float *sloveProblemInstance(HeatProblem1d problemParams, SimulationPara
 
 	print2dArray(hostOutPut, numberOfXPoints, numberOfMoments);
 
-	return new float;
+	return hostOutPut;
 }
 #endif

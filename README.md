@@ -4,14 +4,25 @@ I will be simulating heat diffusion by numerically approximating solutions to th
 ### Todos
 + Make sure that numeric types are large enough to handle all relevant problems and
 simulation params
-+ Add check to make sure r <= 1/2. If r > 1/2 alert the user that the explicit method
-can not be used for the parameters given and terminate.
+
++ Add check to make sure r <= 1/2. If r > 1/2 alert the user that the explicit method can not be used for the parameters given and terminate.
+
 + Improve efficiency
-+ Set up GNUPG and share repo with course staff
-+ Make reusable/flexible animation program
+
 + Make sure interface the between animation program and simulation can handle very large
 simulations (if you write the data to a file, how much data can the simulation output)
-+ Update main to print comma separated values to file with first line t, second line points,
-subsequent lines the temps
 
-testing gpg a second time
++ Have a function(s) which takes parameter structs and calculates number of time
+intervals and number of points
+
++ Have file printing function take parameter structs, output, and file name
+
++ Have file printing function print output as follows:
+	+ First line difference in time between rows of output
+	+ Second line locations of points for whom temp was estimated (comma separated)
+	+ Each subsequent line the comma separated temps at a moment in time
+
+
++ Add timing code (need to decide what should be included in run time)
+
++ Update simulation code to label axis and display time

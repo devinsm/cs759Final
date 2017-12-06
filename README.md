@@ -13,3 +13,5 @@ can not be used for the parameters given and terminate.
 simulations (if you write the data to a file, how much data can the simulation output)
 + Update main to print comma separated values to file with first line t, second line points,
 subsequent lines the temps
+
+testing gpg

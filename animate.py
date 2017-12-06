@@ -45,6 +45,18 @@ def readInput(file):
     return t, np.array(dataList[0]), np.array(dataList[1:])
 
 ##############################################################################
+# The body of the script
+##############################################################################
+t, points, data = readInput("euler/cs759Final/testInput.txt")
+
+fig, ax = plt.subplots()
+line, = ax.plot([], [], 'b-')
+
+numPoints, = points.shape
+ax.set_xlim(0, points[numPoints - 1])
+ax.set_ylim(0,0.1) #after reading the first line of data this will be updated
+
+##############################################################################
 # The function which updates the graph at each time step.
 # Parameters:
 #   heatVals: numpy array of floats
@@ -56,53 +68,19 @@ def animate(heatVals):
     # First update scale of y axis
     # This is necessary since we don't know who big/small the temps are before hand
     ymin, ymax = ax.get_ylim()
-    maxTemp = numpy.amax(heatVals)
-    minTemp = numpy.amin(heatVals)
-    newMin = minTemp if minTemp < ymin else ymin
-    newMax = maxTemp if maxTemp > ymax else ymax
-    ax.set_ylim(newMin, newMax)
+    maxTemp = np.amax(heatVals)
+    minTemp = np.amin(heatVals)
+
+    if minTemp < ymin or maxTemp > ymax:
+        newMin = minTemp if minTemp < ymin else ymin
+        newMax = maxTemp if maxTemp > ymax else ymax
+        ax.set_ylim(newMin, newMax)
 
     # Now plot the points on the line
-    line.set_data()
+    line.set_data(points, heatVals)
 
 
 ##############################################################################
-# The body of the script
-##############################################################################
-t, points, data = readInput("euler/cs759Final/testInput.txt")
-numPoints, = points.shape
 
-fig, ax = plt.subplots()
-
-ax.set_xlim(0, points[numPoints - 1])
-ax.set_ylim(0,0.1) #after reading the first line of data this will be updated
-
-line, = ax.plot([], [], 'b-')
-xmin, xmax = ax.get_xlim()
-print("xmax: " + str(xmax))
-print("t: " + str(t))
-print("points: ")
-print(points)
-print("data: ")
-print(data)
-
-# fig, ax = plt.subplots()
-#
-# ax.set_xlim(0, 20)
-# ax.set_ylim(0, 20)
-#
-# line, = ax.plot([], [], 'bo')
-#
-#
-# def animate(i):
-#     line.set_data(i, i)  # update the data
-#     return line,
-#
-#
-# # Init only required for blitting to give a clean slate.
-# def init():
-#     line.set_data(0, 0)
-#     return line,
-#
-# ani = animation.FuncAnimation(fig, animate, np.arange(1, 20), init_func=init, blit=False)
-# plt.show()
+ani = animation.FuncAnimation(fig, animate, data, blit=False)
+plt.show()

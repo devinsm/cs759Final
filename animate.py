@@ -22,12 +22,10 @@ import matplotlib.animation as animation
 #   file: string
 #       name of input file
 # Returns:
-#   l: float
-#       length of the rod
 #   t: float
 #       time between succesive rows
-#   deltaX: float
-#       distance between succesive points
+#   points: numpy array of floats
+#       the points on the rod which were used in the numerical simulation
 #   data: numpy array of floats
 #       The 2D array of generated temperature values
 ##############################################################################
@@ -36,22 +34,52 @@ def readInput(file):
     inputLines = inputFile.readlines()
 
     # Get metadata
-    l = inputLines[0]
-    t = inputLines[1]
-    deltaX = inputLines[2]
+    t = inputLines[0]
 
     # Create numpy array
-    dataList = [line.replace(' ', '') for line in inputLines[3:]]
+    dataList = [line.replace(' ', '') for line in inputLines[1:]]
     dataList = [line.replace('\n', '') for line in dataList]
     dataList = [line.split(',') for line in dataList]
     dataList = [[float(string) for string in line] for line in dataList]
-    print("l: " + l)
-    print("t: " + t)
-    print("deltaX: " + deltaX)
-    print("data:")
-    print(dataList)
 
-readInput("euler/cs759Final/testInput.txt")
+    return t, np.array(dataList[0]), np.array(dataList[1:])
+
+##############################################################################
+# The function which updates the graph at each time step.
+# Parameters:
+#   heatVals: numpy array of floats
+#       The calculated values of the temperature at the discrete points.
+# Returns:
+#   line: a tuple containing the line to plot.
+##############################################################################
+def animate(heatVals):
+    # First update scale of y axis
+    # This is necessary since we don't know who big/small the temps are before hand
+    ymin, ymax = ax.get_ylim()
+    maxTemp = numpy.amax(heatVals)
+    minTemp = numpy.amin(heatVals)
+    newMin = minTemp if minTemp < ymin else ymin
+    newMax = maxTemp if maxTemp > ymax else ymax
+    ax.set_ylim(newMin, newMax)
+
+    # Now plot the points on the line
+    line.set_data()
+
+
+##############################################################################
+# The body of the script
+##############################################################################
+t, points, data = readInput("euler/cs759Final/testInput.txt")
+numPoints, = points.shape
+
+fig, ax = plt.subplots()
+
+ax.set_xlim(0, points[numPoints - 1])
+ax.set_ylim(0,0) #after reading the first line of data this will be updated
+
+line, = ax.plot([], [], 'b-')
+xmin, xmax = ax.get_xlim()
+print("xmax: " + xmax)
 
 # fig, ax = plt.subplots()
 #

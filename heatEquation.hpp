@@ -209,7 +209,7 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams, SimulationP
 	sloveProblemInstanceDevice<<<numBlocks, BLOCK_SIZE>>>(problemParams, simParams, deviceOutPut, workingMem);
 
 	//copy back the data
-	cudaMemcpy(hostOutPut, deviceOutPut, sizeOfOutPutArray * sizeof(float), cudaMemcpyDeviceToHost);
+	CudaSafeCall(cudaMemcpy(hostOutPut, deviceOutPut, sizeOfOutPutArray * sizeof(float), cudaMemcpyDeviceToHost));
 
 	std::cout << simParams.deltaT * simParams.periodOfRecordings << std::endl;
 	for (size_t i = 0; i < numberOfXPoints - 1; i++) {

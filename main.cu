@@ -48,6 +48,6 @@ int main(int argc, char const *argv[]) {
 	simParams1.numIterations = 20;
 	simParams1.periodOfRecordings = 1;
 
-	sloveProblemInstance(problem1, simParams1);
+	sloveProblemInstance(problem1, simParams1, "smithProblem.txt");
 	return 0;
 }

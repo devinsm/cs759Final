@@ -86,19 +86,35 @@ __host__ __device__ inline int realIdx(int rowIdx, int colIdx, int numCols) {
 	return rowIdx * numCols + colIdx;
 }
 /**
- *Prints a 2D array in a table.
+ *Prints the data needed for the animation to the named file.
  *
- *@param array A pointer to the array (which should be in row major order).
- *@param numCols The number of columns.
- *@param numRows The number of rows.
+ *@param outPut The output of the simulation in row major order.
+ *@param problemParams The problem parameters.
+ *@param simParams The simulation parameters.
+ *@param fileName The name of the file to write to.
 */
-__host__ void print2dArray(float *array, int numCols, int numRows) {
+template <typename T>
+__host__ void printOutPut(float *outPut, HeatProblem1d<T> problemParams,
+														SimulationParams1D simParams, std::string fileName) {
+	int numberOfXPoints = numPoints(problemParams, simParams);
+	int numberOfMoments = numMoments(simParams);
+
+	std::cout << simParams.deltaT * simParams.periodOfRecordings << std::endl;
+
+	//fixed point, and 4 decimal precision, and right justifaction make output more
+	//readable for humans
 	std::cout << std::fixed << std::setprecision(4) << std::right;
-	for (size_t i = 0; i < numRows; i++) {
-		for (size_t j = 0; j < numCols - 1; j++) {
-			std::cout << std::setw(10) << array[realIdx(i, j, numCols)] << ",";
+	for (size_t i = 0; i < numberOfXPoints - 1; i++) {
+		std::cout << std::setw(10) << i * simParams.deltaX << ",";
+	}
+	std::cout << std::setw(10) << problemParams.l << std::endl;
+
+	for (size_t i = 0; i < numberOfMoments; i++) {
+		for (size_t j = 0; j < numberOfXPoints - 1; j++) {
+			std::cout << std::setw(10) << outPut[realIdx(i, j, numberOfXPoints)] << ",";
 		}
-		std::cout << std::setw(10) << array[realIdx(i, numCols - 1, numCols)] << std::endl;
+		std::cout << std::setw(10) <<
+				outPut[realIdx(i, numberOfXPoints - 1, numberOfXPoints)] << std::endl;
 	}
 	std::cout << std::setprecision(6) << std::defaultfloat; //revert to defaults
 }
@@ -181,6 +197,7 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, in
  *
  *@param problemParameters A struct which describes the problem to be solved.
  *@param simParams A struct which describes the parameters of the FDM.
+ *@param fileName Name of the file to which output of simulation will be printed.
  *
  *@return A pointer to the a 2d array holding the state of the system at periodic moments in
  *time. The array will be in row major order and allocated with new. The moments will be t = 0,
@@ -189,7 +206,8 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, in
  *In other words elements of rows are recordings at a moment in time.
 */
 template <typename T>
-__host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams, SimulationParams1D simParams) {
+__host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams,
+																		SimulationParams1D simParams, std::string fileName) {
 	//Malloc the memory to store the results on the host
 
 	const int numberOfXPoints = numPoints(problemParams, simParams);
@@ -211,12 +229,7 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams, SimulationP
 	//copy back the data
 	CudaSafeCall(cudaMemcpy(hostOutPut, deviceOutPut, sizeOfOutPutArray * sizeof(float), cudaMemcpyDeviceToHost));
 
-	std::cout << simParams.deltaT * simParams.periodOfRecordings << std::endl;
-	for (size_t i = 0; i < numberOfXPoints - 1; i++) {
-		std::cout << i * simParams.deltaX << ", ";
-	}
-	std::cout << problemParams.l << std::endl;
-	print2dArray(hostOutPut, numberOfXPoints, numberOfMoments);
+	printOutPut(hostOutPut, problemParams, simParams, fileName);
 
 	return hostOutPut;
 }

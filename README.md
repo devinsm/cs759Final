@@ -13,9 +13,6 @@ simulation params
 + Make sure interface the between animation program and simulation can handle very large
 simulations (if you write the data to a file, how much data can the simulation output)
 
-+ Have a function(s) which takes parameter structs and calculates number of time
-intervals and number of points
-
 + Have file printing function take parameter structs, output, and file name
 
 + Have file printing function print output as follows:

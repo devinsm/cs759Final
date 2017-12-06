@@ -27,3 +27,6 @@ all : $(EXEC)
 
 generate_data: main.cu heatEquation.hpp
 	module load cuda;nvcc -o generate_data $(OPT) main.cu -ccbin $(BIN)
+
+clean:
+	rm -f generate_data

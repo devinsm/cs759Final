@@ -173,9 +173,9 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams, SimulationP
 
 	const int sizeOfOutPutArray = numberOfMoments * numberOfXPoints;
 
-	std::cout << "Number of position points: " << numberOfXPoints << std::endl;
-	std::cout << "Number of time points recorded: " << numberOfMoments << std::endl;
-	std::cout << "Size of output memory: " << sizeOfOutPutArray << std::endl;
+	// std::cout << "Number of position points: " << numberOfXPoints << std::endl;
+	// std::cout << "Number of time points recorded: " << numberOfMoments << std::endl;
+	// std::cout << "Size of output memory: " << sizeOfOutPutArray << std::endl;
 
 	float *deviceOutPut = nullptr;
 	float *hostOutPut = nullptr;
@@ -191,6 +191,7 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams, SimulationP
 	//copy back the data
 	cudaMemcpy(hostOutPut, deviceOutPut, sizeOfOutPutArray * sizeof(float), cudaMemcpyDeviceToHost);
 
+	std::cout << simParams.deltaT * simParams.periodOfRecordings << endl;
 	print2dArray(hostOutPut, numberOfXPoints, numberOfMoments);
 
 	return hostOutPut;

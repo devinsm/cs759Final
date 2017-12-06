@@ -7,5 +7,4 @@
 #SBATCH --output=/srv/home/mcallester/cs759Final/sbatch.out
 #SBATCH --gres=gpu:1
 
-make
 ./generate_data

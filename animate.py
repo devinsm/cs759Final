@@ -75,11 +75,16 @@ numPoints, = points.shape
 fig, ax = plt.subplots()
 
 ax.set_xlim(0, points[numPoints - 1])
-ax.set_ylim(0,0) #after reading the first line of data this will be updated
+ax.set_ylim(0,0.1) #after reading the first line of data this will be updated
 
 line, = ax.plot([], [], 'b-')
 xmin, xmax = ax.get_xlim()
-print("xmax: " + xmax)
+print("xmax: " + str(xmax))
+print("t: " + str(t))
+print("points: ")
+print(points)
+print("data: ")
+print(data)
 
 # fig, ax = plt.subplots()
 #

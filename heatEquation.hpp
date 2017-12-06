@@ -69,10 +69,10 @@ __host__ __device__ inline int realIdx(int rowIdx, int colIdx, int numCols) {
 __host__ void print2dArray(float *array, int numCols, int numRows) {
 	std::cout << std::fixed << std::setprecision(4) << std::right;
 	for (size_t i = 0; i < numRows; i++) {
-		for (size_t j = 0; j < numCols; j++) {
-			std::cout << std::setw(10) << array[realIdx(i, j, numCols)];
+		for (size_t j = 0; j < numCols - 1; j++) {
+			std::cout << std::setw(10) << array[realIdx(i, j, numCols)] << ",";
 		}
-		std::cout << std::endl;
+		std::cout << std::setw(10) << array[realIdx(i, numCols - 1, numCols)] << std::endl;
 	}
 	std::cout << std::setprecision(6) << std::defaultfloat; //revert to defaults
 }
@@ -191,7 +191,11 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams, SimulationP
 	//copy back the data
 	cudaMemcpy(hostOutPut, deviceOutPut, sizeOfOutPutArray * sizeof(float), cudaMemcpyDeviceToHost);
 
-	std::cout << simParams.deltaT * simParams.periodOfRecordings << endl;
+	std::cout << simParams.deltaT * simParams.periodOfRecordings << std::endl;
+	for (size_t i = 0; i < numberOfXPoints - 1; i++) {
+		std::cout << i * simParams.deltaX << ", ";
+	}
+	std::cout << problemParams.l << std::endl;
 	print2dArray(hostOutPut, numberOfXPoints, numberOfMoments);
 
 	return hostOutPut;

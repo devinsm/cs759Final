@@ -47,7 +47,7 @@ def readInput(file):
 ##############################################################################
 # The body of the script
 ##############################################################################
-t, points, data = readInput("euler/cs759Final/testInput.txt")
+t, points, data = readInput("euler/cs759Final/sbatch.out")
 
 fig, ax = plt.subplots()
 line, = ax.plot([], [], 'b-')

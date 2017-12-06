@@ -14,4 +14,4 @@ simulations (if you write the data to a file, how much data can the simulation o
 + Update main to print comma separated values to file with first line t, second line points,
 subsequent lines the temps
 
-testing gpg
+testing gpg a second time

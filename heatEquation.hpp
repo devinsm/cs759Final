@@ -48,6 +48,32 @@ struct SimulationParams1D {
 	//to output data structure.
 	int periodOfRecordings;
 };
+
+/**
+ *Calculates the number of moments in time for which the simulation will perform
+ *the finite difference calculations.
+ *
+ *@param simParams The simulation parameters.
+ *@return The number of moments in time for which the simulation will perform the
+ *finite difference calculations (including 0 and last moment).
+*/
+__host__ __device__ inline int numMoments(const SimulationParams1D& simParams){
+	return simParams.numIterations / simParams.periodOfRecordings + 1;
+}
+
+/**
+ *Calculates the number of points on the rod that will be used in the simulation.
+ *
+ *@param simParams The simulation parameters.
+ *@param problemParams The problem parameters.
+ *@return The number of points on the rod that will be used in the simulation (includes
+ *the ends of the rod).
+*/
+template <typename T>
+__host__ __device__ inline int numPoints(const HeatProblem1d<T>& problemParams, const SimulationParams1D& simParams) {
+	return ceil((problemParams.l / simParams.deltaX) + 1);
+}
+
 /**
  *Gives the index into a 2d array stored in row major order.
  *
@@ -90,7 +116,8 @@ __host__ void print2dArray(float *array, int numCols, int numRows) {
 */
 template <typename T>
 __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, SimulationParams1D simParams,
-																					float *outPut, float* workingMem, int numCols) {
+																					float *outPut, float* workingMem) {
+	int numCols = numPoints(problemParams, simParams);
 	int column = blockDim.x * blockIdx.x + threadIdx.x;
 	if (column >= numCols) {
 		return;
@@ -165,17 +192,10 @@ template <typename T>
 __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams, SimulationParams1D simParams) {
 	//Malloc the memory to store the results on the host
 
-	//number of discrete points (we always include the ends of the rod)
-	const int numberOfXPoints = ceil((problemParams.l / simParams.deltaX) + 1);
-
-	//number of moments in time (including 0 and last moment)
-	const int numberOfMoments = simParams.numIterations / simParams.periodOfRecordings + 1;
+	const int numberOfXPoints = numPoints(problemParams, simParams);
+	const int numberOfMoments = numMoments(simParams);
 
 	const int sizeOfOutPutArray = numberOfMoments * numberOfXPoints;
-
-	// std::cout << "Number of position points: " << numberOfXPoints << std::endl;
-	// std::cout << "Number of time points recorded: " << numberOfMoments << std::endl;
-	// std::cout << "Size of output memory: " << sizeOfOutPutArray << std::endl;
 
 	float *deviceOutPut = nullptr;
 	float *hostOutPut = nullptr;
@@ -186,7 +206,7 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams, SimulationP
 	CudaSafeCall(cudaMalloc(&workingMem, numberOfXPoints * 2 * sizeof(float)));
 
 	int numBlocks = (BLOCK_SIZE + numberOfXPoints - 1) / numberOfXPoints;
-	sloveProblemInstanceDevice<<<numBlocks, BLOCK_SIZE>>>(problemParams, simParams, deviceOutPut, workingMem, numberOfXPoints);
+	sloveProblemInstanceDevice<<<numBlocks, BLOCK_SIZE>>>(problemParams, simParams, deviceOutPut, workingMem);
 
 	//copy back the data
 	cudaMemcpy(hostOutPut, deviceOutPut, sizeOfOutPutArray * sizeof(float), cudaMemcpyDeviceToHost);

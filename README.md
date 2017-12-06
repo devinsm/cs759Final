@@ -8,6 +8,7 @@ simulation params
 + Add check to make sure r <= 1/2. If r > 1/2 alert the user that the explicit method can not be used for the parameters given and terminate.
 
 + Improve efficiency
+	+ Move "workingMem" from global to shared memory
 
 + Make sure interface the between animation program and simulation can handle very large
 simulations (if you write the data to a file, how much data can the simulation output)

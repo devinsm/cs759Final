@@ -1,6 +1,19 @@
 # Final Project for CS 759
 I will be simulating heat diffusion by numerically approximating solutions to the heat equation.
 
+### Todos
++ Make sure that numeric types are large enough to handle all relevant problems and
+simulation params
++ Add check to make sure r <= 1/2. If r > 1/2 alert the user that the explicit method
+can not be used for the parameters given and terminate.
++ Improve efficiency
++ Set up GNUPG and share repo with course staff
++ Make reusable/flexible animation program
++ Make sure interface the between animation program and simulation can handle very large
+simulations (if you write the data to a file, how much data can the simulation output)
+
+
+
 ## Plan
 I will be using a finite difference approximation of the heat equation. Specifically
 I will start by implementing a simulation of the diffusion of heat in a 1d "rod"
@@ -45,3 +58,18 @@ do the graphics.
 + I added a struct to hold parameters of the simulation. I did this because the problem
 (specified by length, starting temp, alpha, etc.) is independent of how I will solve it.
 Thus I removed k and h from original struct and made a new struct with all the simulation params.
+
+### Thoughts on Animating Results
++ I will use pyplot/matplotlib to make the animation
++ The results of the simulation will be stored in a file (I will have to check the
+max possible size of a file)
++ The user will have to copy the file to their local machine and run the animation
+script
++ The x axis should range from 0 to L (L should be first line of file)
++ In order to display time, include time step as second line in file
++ Since one can not know the min/max y value before stepping through all the data,
+the min/max value should be updated as the animation runs. I don't think the magnitude
+of the range for the y-axis should change as the simulation progresses (since that could
+appear misleading and make it seem like the values are not getting smaller). So at least
+at first only resize to increase the max or decrease the min. In each iteration I
+will have to look at the max/min value for that time in order to do that.

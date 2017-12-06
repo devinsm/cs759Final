@@ -45,7 +45,7 @@ int main(int argc, char const *argv[]) {
 	SimulationParams1D simParams1;
 	simParams1.deltaX = .1;
 	simParams1.deltaT = .001;
-	simParams1.numIterations = 20;
+	simParams1.numIterations = 500;
 	simParams1.periodOfRecordings = 1;
 
 	sloveProblemInstance(problem1, simParams1, "smithProblem.txt");

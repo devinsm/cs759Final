@@ -13,13 +13,7 @@ simulation params
 + Make sure interface the between animation program and simulation can handle very large
 simulations (if you write the data to a file, how much data can the simulation output)
 
-+ Have file printing function take parameter structs, output, and file name
-
-+ Have file printing function print output as follows:
-	+ First line difference in time between rows of output
-	+ Second line locations of points for whom temp was estimated (comma separated)
-	+ Each subsequent line the comma separated temps at a moment in time
-
++ Have print function print to file instead of cout
 
 + Add timing code (need to decide what should be included in run time)
 

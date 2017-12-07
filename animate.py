@@ -48,9 +48,12 @@ def readInput(file):
 # The body of the script
 ##############################################################################
 t, points, data = readInput("euler/cs759Final/sbatch.out")
+time = 0
 
 fig, ax = plt.subplots()
 line, = ax.plot([], [], 'b-')
+ax.set_xlabel("Position")
+ax.set_ylabel("Temperature")
 
 numPoints, = points.shape
 ax.set_xlim(0, points[numPoints - 1])
@@ -76,8 +79,13 @@ def animate(heatVals):
         newMax = maxTemp if maxTemp > ymax else ymax
         ax.set_ylim(newMin, newMax)
 
+    #Update time
+    time += t
+
     # Now plot the points on the line
     line.set_data(points, heatVals)
+    line.set_label("Time: " + str(time))
+    return line,
 
 
 ##############################################################################

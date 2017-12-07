@@ -223,6 +223,7 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, in
  *@param simParams A struct which describes the parameters of the FDM.
  *@param fileName Name of the file to which output of simulation will be printed.
  *
+ *@throws std::runtime_error If the file can't be opened.
  *@return A pointer to the a 2d array holding the state of the system at periodic moments in
  *time. The array will be in row major order and allocated with new. The moments will be t = 0,
  *t = periodOfRecordings * deltaT, t = 2 * periodOfRecordings * deltaT, etc. If A is the returned array, then A[n][j] is

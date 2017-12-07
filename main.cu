@@ -1,13 +1,12 @@
 /*
  *This file contains the main program which calls the functions in heatEquation.hpp.
- *For now it writes the output data to plain text file. Once I get the graphics/animation
- *part of the program nailed down I might change this code to match.
+ *
+ *@author Devin McAllester
 */
 
 //C++ include statements
 #include <iostream>
-
-//GPU library include statements
+#include <exception>
 
 //Project specific include statements
 #include "heatEquation.hpp"
@@ -48,6 +47,11 @@ int main(int argc, char const *argv[]) {
 	simParams1.numIterations = 500;
 	simParams1.periodOfRecordings = 1;
 
-	sloveProblemInstance(problem1, simParams1, "smithProblem.txt");
+	try {
+		sloveProblemInstance(problem1, simParams1, "smithProblem.txt");
+	} catch (std::exception& e) {
+		cout << "Simulation on line " << __LINE__ - 2 << "threw an exception" << endl;
+		cout << e.what() << endl;
+	}
 	return 0;
 }

@@ -50,7 +50,7 @@ def readInput(file):
 # The body of the script
 ##############################################################################
 t, points, data = readInput("euler/cs759Final/smithProblem.txt")
-time = 0
+time = 0.0
 
 fig, ax = plt.subplots()
 line, = ax.plot([], [], 'b-', label="Time: 0.0")
@@ -84,9 +84,6 @@ def animate(heatVals):
         newMax = maxTemp if maxTemp > ymax else ymax
         ax.set_ylim(newMin, newMax)
 
-    #Update time
-    time += t
-
     # Now plot the points on the line
     line.set_data(points, heatVals)
 
@@ -94,10 +91,22 @@ def animate(heatVals):
     # post: https://stackoverflow.com/questions/21008858/formatting-floats-in-a-numpy-array
     line.set_label("Time: " + "%.4f" % time)
     ax.legend()
+    time += t
+
     return line,
 
 
 ##############################################################################
+# Function initializes animation
+# Returns:
+#   line: a tuple containing the line to plot
+##############################################################################
+def initFunction():
+    global time
+    time = 0.0
+    return line,
 
-ani = animation.FuncAnimation(fig, animate, data, blit=False)
+##############################################################################
+
+ani = animation.FuncAnimation(fig, animate, data, init_func=initFunction, blit=False, interval=400)
 plt.show()

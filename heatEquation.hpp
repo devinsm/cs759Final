@@ -10,9 +10,13 @@
 #define HEATEQUATION_HPP
 //C++ include statements
 #include <iostream>
+#include <fstream>
 #include <cmath>
+#include <cstring>
+#include <cerrno>
 #include <ios>
 #include <iomanip>
+#include <stdexcept>
 
 //Project specific include statements
 #include "errorMacros.hpp"
@@ -85,6 +89,24 @@ __host__ __device__ inline int numPoints(const HeatProblem1d<T>& problemParams, 
 __host__ __device__ inline int realIdx(int rowIdx, int colIdx, int numCols) {
 	return rowIdx * numCols + colIdx;
 }
+
+/**
+ *Opens the named file and throws an exception if it couldn't be opened.
+ *
+ *@param fileName The name of the file to open.
+ *@return An ofstream which can be used to write to the named file.
+ *@throw std::runtime_error If the file can't be opened.
+*/
+std::ofstream openFile(const std::string& fileName) {
+	std::ofstream outFile(fileName);
+
+	if (!outFile.is_open()) {
+		throw std::runtime_error("Failed to open file " + fileName + " (" + strerror(errno) + ") ");
+	}
+
+	return outFile;
+}
+
 /**
  *Prints the data needed for the animation to the named file.
  *
@@ -94,29 +116,31 @@ __host__ __device__ inline int realIdx(int rowIdx, int colIdx, int numCols) {
  *@param fileName The name of the file to write to.
 */
 template <typename T>
-__host__ void printOutPut(float *outPut, HeatProblem1d<T> problemParams,
-														SimulationParams1D simParams, std::string fileName) {
+__host__ void printOutPut(float *outPut, const HeatProblem1d<T>& problemParams,
+														const SimulationParams1D& simParams, std::string fileName) {
 	int numberOfXPoints = numPoints(problemParams, simParams);
 	int numberOfMoments = numMoments(simParams);
+	std::ofstream outFile = openFile(fileName);
 
-	std::cout << simParams.deltaT * simParams.periodOfRecordings << std::endl;
+	outFile << simParams.deltaT * simParams.periodOfRecordings << std::endl;
 
 	//fixed point, and 4 decimal precision, and right justifaction make output more
 	//readable for humans
-	std::cout << std::fixed << std::setprecision(4) << std::right;
+	outFile << std::fixed << std::setprecision(4) << std::right;
 	for (size_t i = 0; i < numberOfXPoints - 1; i++) {
-		std::cout << std::setw(10) << i * simParams.deltaX << ",";
+		outFile << std::setw(10) << i * simParams.deltaX << ",";
 	}
-	std::cout << std::setw(10) << problemParams.l << std::endl;
+	outFile << std::setw(10) << problemParams.l << std::endl;
 
 	for (size_t i = 0; i < numberOfMoments; i++) {
 		for (size_t j = 0; j < numberOfXPoints - 1; j++) {
-			std::cout << std::setw(10) << outPut[realIdx(i, j, numberOfXPoints)] << ",";
+			outFile << std::setw(10) << outPut[realIdx(i, j, numberOfXPoints)] << ",";
 		}
-		std::cout << std::setw(10) <<
+		outFile << std::setw(10) <<
 				outPut[realIdx(i, numberOfXPoints - 1, numberOfXPoints)] << std::endl;
 	}
-	std::cout << std::setprecision(6) << std::defaultfloat; //revert to defaults
+
+	outFile.close();
 }
 
 /**

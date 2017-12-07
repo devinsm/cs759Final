@@ -5,6 +5,8 @@
 # those tutorials was doing the same thing I'm doing here, the code in those
 # tutorials highly influenced my code here. For a complete list of the
 # the Python/matplotlib/numpy resources I consulted, please see my final report.
+# Also, as noted in the inline comments, my conversion of the variable time to a fixed point
+# string representation came from https://stackoverflow.com/questions/21008858/formatting-floats-in-a-numpy-array.
 #
 # matplotlib.org tutorials:
 #   https://matplotlib.org/users/pyplot_tutorial.html
@@ -51,7 +53,9 @@ t, points, data = readInput("euler/cs759Final/smithProblem.txt")
 time = 0
 
 fig, ax = plt.subplots()
-line, = ax.plot([], [], 'b-')
+line, = ax.plot([], [], 'b-', label="Time: 0.0")
+ax.legend()
+ax.set_title("Heat Diffusion in 1D \"Rod\"")
 ax.set_xlabel("Position")
 ax.set_ylabel("Temperature")
 
@@ -85,7 +89,11 @@ def animate(heatVals):
 
     # Now plot the points on the line
     line.set_data(points, heatVals)
-    line.set_label("Time: " + str(time))
+
+    # The string conversion of time below is based off of the following stack overflow
+    # post: https://stackoverflow.com/questions/21008858/formatting-floats-in-a-numpy-array
+    line.set_label("Time: " + "%.4f" % time)
+    ax.legend()
     return line,
 
 

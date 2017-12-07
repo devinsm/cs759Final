@@ -34,7 +34,7 @@ def readInput(file):
     inputLines = inputFile.readlines()
 
     # Get metadata
-    t = inputLines[0]
+    t = float(inputLines[0])
 
     # Create numpy array
     dataList = [line.replace(' ', '') for line in inputLines[1:]]
@@ -47,7 +47,7 @@ def readInput(file):
 ##############################################################################
 # The body of the script
 ##############################################################################
-t, points, data = readInput("euler/cs759Final/sbatch.out")
+t, points, data = readInput("euler/cs759Final/smithProblem.txt")
 time = 0
 
 fig, ax = plt.subplots()
@@ -68,6 +68,7 @@ ax.set_ylim(0,0.1) #after reading the first line of data this will be updated
 #   line: a tuple containing the line to plot.
 ##############################################################################
 def animate(heatVals):
+    global time
     # First update scale of y axis
     # This is necessary since we don't know who big/small the temps are before hand
     ymin, ymax = ax.get_ylim()

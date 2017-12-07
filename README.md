@@ -14,8 +14,6 @@ can not be used for the parameters given and terminate the program.
 + Make sure interface the between animation program and simulation can handle very large
 simulations (if you write the data to a file, how much data can the simulation output?)
 
-+ Have print function print to file instead of cout
-
 + Add timing code (need to decide what should be included in run time)
 
 + Update simulation code to label axis and display time

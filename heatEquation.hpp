@@ -78,6 +78,17 @@ __host__ __device__ inline int numPoints(const HeatProblem1d<T>& problemParams, 
 	return ceil((problemParams.l / simParams.deltaX) + 1);
 }
 
+/*Calculates r given simulation params.
+ *
+ *@param problemParams The problem parameters.
+ *@param simParams The simulation params.
+ *@return (alpha * deltaT) / (deltaX ^ 2)
+*/
+template <typename T>
+__host__ __device__ inline float rVal(const HeatProblem1d<T>& problemParams, const SimulationParams1D& simParams) {
+	return (problemParams.alpha * simParams.deltaT) / (simParams.deltaX * simParams.deltaX);
+}
+
 /**
  *Gives the index into a 2d array stored in row major order.
  *
@@ -162,7 +173,7 @@ __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, Simul
 	if (column >= numCols) {
 		return;
 	}
-	const float r = (problemParams.alpha * simParams.deltaT) / (simParams.deltaX * simParams.deltaX);
+	const float r = rVal(problemParams, simParams);
 
 	//not valid if column == numCols - 1
 	float point = column * simParams.deltaX;
@@ -223,7 +234,8 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, in
  *@param simParams A struct which describes the parameters of the FDM.
  *@param fileName Name of the file to which output of simulation will be printed.
  *
- *@throws std::runtime_error If the file can't be opened.
+ *@throws std::runtime_error If the file can't be opened or if the simulation
+ *parameters would make the simulation numerically unstable (i.e. r > 1/2).
  *@return A pointer to the a 2d array holding the state of the system at periodic moments in
  *time. The array will be in row major order and allocated with new. The moments will be t = 0,
  *t = periodOfRecordings * deltaT, t = 2 * periodOfRecordings * deltaT, etc. If A is the returned array, then A[n][j] is
@@ -233,6 +245,9 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, in
 template <typename T>
 __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams,
 																		SimulationParams1D simParams, std::string fileName) {
+	if (rVal(problemParams, simParams) > .5) {
+		throw std::runtime_error("r for simulation params is greater than 1/2");
+	}
 	//Malloc the memory to store the results on the host
 
 	const int numberOfXPoints = numPoints(problemParams, simParams);

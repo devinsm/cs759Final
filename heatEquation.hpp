@@ -237,7 +237,7 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, un
  *parameters would make the simulation numerically unstable (i.e. r > 1/2).
 */
 template <typename T>
-__host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams,
+__host__ void sloveProblemInstance(HeatProblem1d<T> problemParams,
 																		SimulationParams1D simParams, std::string fileName) {
 	if (rVal(problemParams, simParams) > .5) {
 		throw std::runtime_error("r for simulation params is greater than 1/2");
@@ -269,6 +269,5 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams,
 
 	delete[] hostOutPut;
 	CudaSafeCall(cudaFree(deviceOutPut));
-	return hostOutPut;
 }
 #endif

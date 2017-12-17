@@ -63,6 +63,15 @@ animate.py is hard coded. This means that when running animate.py on your local
 machine, you will have to change animate.py to have the correct path to the
 generated file.
 
+## Constraints On Inputs
+In the following discussion I refer to UINT_MAX which is defined in <cstdint>, and
+is the largest value which can represented by an unsigned int.
+* The number of iterations must be strictly less than UINT_MAX.
+* The ceiling of the length of the rod divided by delta X must be strictly less than
+1024.
+* The number of temperatures produced in the output of a simulation must be less
+than or equal to UINT_MAX + 1.
+* r, or (deltaT * alpha) / (deltaX^2), must be less than or equal to 1/2.
 ## Heat Equation and Numerical Methods References
 * https://en.wikipedia.org/wiki/Numerical_stability
 * https://en.wikipedia.org/wiki/Heat_equation
@@ -78,6 +87,7 @@ generated file.
 * Make sure that numeric types are large enough to handle all relevant problems and
 simulation params
 * Add timing code (need to decide what should be included in run time)
+* Change Kernel invocation to only use 1 block
 * Make main ask the user for the initial conditions, boundary conditions, and
 other necessary parameters
 * Have the simulation script accept the name of the file to read from as a command

@@ -1,5 +1,5 @@
 /*
- *This file holds the (usually CUDA) functions which I wrote to numerically simulate
+ *This file holds the functions which I wrote to numerically simulate
  *the diffusion of heat using the heat equation. Please see my final project report for
  *a list of resources I consulted while writing the following code.
  *
@@ -54,12 +54,12 @@ struct SimulationParams1D {
 };
 
 /**
- *Calculates the number of moments in time for which the simulation will perform
- *the finite difference calculations.
+ *Calculates the number of moments in time for which the simulation will write
+ *the temperatures to the output array.
  *
  *@param simParams The simulation parameters.
- *@return The number of moments in time for which the simulation will perform the
- *finite difference calculations (including 0 and last moment).
+ *@return The number of moments in time for which the simulation will write the
+ *temperatures to the output array.
 */
 __host__ __device__ inline int numMoments(const SimulationParams1D& simParams){
 	return simParams.numIterations / simParams.periodOfRecordings + 1;
@@ -112,7 +112,7 @@ std::ofstream openFile(const std::string& fileName) {
 	std::ofstream outFile(fileName);
 
 	if (!outFile.is_open()) {
-		throw std::runtime_error("Failed to open file " + fileName + " (" + strerror(errno) + ") ");
+		throw std::runtime_error("Failed to open file " + fileName + " (" + strerror(errno) + ")");
 	}
 
 	return outFile;
@@ -163,7 +163,6 @@ __host__ void printOutPut(float *outPut, const HeatProblem1d<T>& problemParams,
  *@param workingMem A 2D array in which threads can store the state at every iteration.
  *It should have the same number of columns as outPut, but only 2 rows.
  *@param output A pointer to the global memory where the result will be stored.
- *@param numCols The number of columns in the output array.
 */
 template <typename T>
 __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, SimulationParams1D simParams,
@@ -188,7 +187,7 @@ __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, Simul
 	outPut[realIdx(0, column, numCols)] = workingMem[realIdx(0, column, numCols)];
 	__syncthreads();
 
-	int j = 1;
+	int outPutRow = 1;
 	int lastTime = 0;
 	int thisTime = 1;
 	for (int i = 1; i <= simParams.numIterations; i++) {
@@ -204,8 +203,8 @@ __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, Simul
 		}
 
 		if (i % simParams.periodOfRecordings == 0) {
-			outPut[realIdx(j, column, numCols)] = workingMem[realIdx(thisTime, column, numCols)];
-			j++;
+			outPut[realIdx(outPutRow, column, numCols)] = workingMem[realIdx(thisTime, column, numCols)];
+			outPutRow++;
 		}
 
 		lastTime = 1 - lastTime;
@@ -227,20 +226,16 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, in
 	hostPointer = new float[numFloats];
 }
 /**
- *Numerically sloves the given heat equation problem and returns a pointer to the
- *desired data.
+ *Numerically sloves the given heat equation problem. It prints the output to
+ *the named file. Please see my project report for a detailed description of
+ *the data produced by the simulation, as well as how to run the animation script.
  *
  *@param problemParameters A struct which describes the problem to be solved.
- *@param simParams A struct which describes the parameters of the FDM.
+ *@param simParams A struct which describes the parameters used to carry out the simulation.
  *@param fileName Name of the file to which output of simulation will be printed.
  *
  *@throws std::runtime_error If the file can't be opened or if the simulation
  *parameters would make the simulation numerically unstable (i.e. r > 1/2).
- *@return A pointer to the a 2d array holding the state of the system at periodic moments in
- *time. The array will be in row major order and allocated with new. The moments will be t = 0,
- *t = periodOfRecordings * deltaT, t = 2 * periodOfRecordings * deltaT, etc. If A is the returned array, then A[n][j] is
- *the temperature at the jth position along the "rod" at the time n * everyXMoments * deltaT.
- *In other words elements of rows are recordings at a moment in time.
 */
 template <typename T>
 __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams,
@@ -271,6 +266,8 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams,
 
 	printOutPut(hostOutPut, problemParams, simParams, fileName);
 
+	delete[] hostOutPut;
+	CudaSafeCall(cudaFree(deviceOutPut));
 	return hostOutPut;
 }
 #endif

@@ -85,7 +85,6 @@ than or equal to UINT_MAX + 1.
 
 ## Todos
 * Add timing code (need to decide what should be included in run time)
-* Change Kernel invocation to only use 1 block
 * Make main ask the user for the initial conditions, boundary conditions, and
 other necessary parameters
 * Have the simulation script accept the name of the file to read from as a command

@@ -46,11 +46,11 @@ struct SimulationParams1D {
 	//Number of times finite difference calculations will be carried out (does not include t = 0).
 	//For instance if numIterations == 3 then the state will be updated at t = deltaT, t = deltaT * 2,
 	//t = deltaT * 3.
-	int numIterations;
+	unsigned numIterations;
 
 	//The number of time intervals that will be allowed to elapse between succesive writes
 	//to output data structure.
-	int periodOfRecordings;
+	unsigned periodOfRecordings;
 };
 
 /**
@@ -61,7 +61,7 @@ struct SimulationParams1D {
  *@return The number of moments in time for which the simulation will write the
  *temperatures to the output array.
 */
-__host__ __device__ inline int numMoments(const SimulationParams1D& simParams){
+__host__ __device__ inline unsigned numMoments(const SimulationParams1D& simParams){
 	return simParams.numIterations / simParams.periodOfRecordings + 1;
 }
 
@@ -74,7 +74,7 @@ __host__ __device__ inline int numMoments(const SimulationParams1D& simParams){
  *the ends of the rod).
 */
 template <typename T>
-__host__ __device__ inline int numPoints(const HeatProblem1d<T>& problemParams, const SimulationParams1D& simParams) {
+__host__ __device__ inline unsigned numPoints(const HeatProblem1d<T>& problemParams, const SimulationParams1D& simParams) {
 	return ceil((problemParams.l / simParams.deltaX) + 1);
 }
 
@@ -97,7 +97,7 @@ __host__ __device__ inline float rVal(const HeatProblem1d<T>& problemParams, con
  *@param numCols The number of columns in a row.
  *@return The index in the 1d representation.
 */
-__host__ __device__ inline int realIdx(int rowIdx, int colIdx, int numCols) {
+__host__ __device__ inline unsigned realIdx(unsigned rowIdx, unsigned colIdx, unsigned numCols) {
 	return rowIdx * numCols + colIdx;
 }
 
@@ -129,8 +129,8 @@ std::ofstream openFile(const std::string& fileName) {
 template <typename T>
 __host__ void printOutPut(float *outPut, const HeatProblem1d<T>& problemParams,
 														const SimulationParams1D& simParams, std::string fileName) {
-	int numberOfXPoints = numPoints(problemParams, simParams);
-	int numberOfMoments = numMoments(simParams);
+	unsigned numberOfXPoints = numPoints(problemParams, simParams);
+	unsigned numberOfMoments = numMoments(simParams);
 	std::ofstream outFile = openFile(fileName);
 
 	outFile << simParams.deltaT * simParams.periodOfRecordings << std::endl;
@@ -167,8 +167,8 @@ __host__ void printOutPut(float *outPut, const HeatProblem1d<T>& problemParams,
 template <typename T>
 __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, SimulationParams1D simParams,
 																					float *outPut, float* workingMem) {
-	int numCols = numPoints(problemParams, simParams);
-	int column = blockDim.x * blockIdx.x + threadIdx.x;
+	unsigned numCols = numPoints(problemParams, simParams);
+	unsigned column = blockDim.x * blockIdx.x + threadIdx.x;
 	if (column >= numCols) {
 		return;
 	}
@@ -190,7 +190,7 @@ __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, Simul
 	int outPutRow = 1;
 	int lastTime = 0;
 	int thisTime = 1;
-	for (int i = 1; i <= simParams.numIterations; i++) {
+	for (unsigned i = 1; i <= simParams.numIterations; i++) {
 		if (column == 0) {
 			workingMem[realIdx(thisTime, 0, numCols)] = problemParams.leftTemp;
 		} else if (column == numCols - 1) {
@@ -221,7 +221,7 @@ __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, Simul
  *@param hostPointer A reference to a pointer to store the address of the host memory.
  *@param numFloats The number of floats which will be output by the simulation.
 */
-__host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, int numFloats) {
+__host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, unsigned numFloats) {
 	CudaSafeCall(cudaMalloc(&devicePointer, sizeof(float) * numFloats));
 	hostPointer = new float[numFloats];
 }
@@ -245,10 +245,10 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams,
 	}
 	//Malloc the memory to store the results on the host
 
-	const int numberOfXPoints = numPoints(problemParams, simParams);
-	const int numberOfMoments = numMoments(simParams);
+	const unsigned numberOfXPoints = numPoints(problemParams, simParams);
+	const unsigned numberOfMoments = numMoments(simParams);
 
-	const int sizeOfOutPutArray = numberOfMoments * numberOfXPoints;
+	const unsigned sizeOfOutPutArray = numberOfMoments * numberOfXPoints;
 
 	float *deviceOutPut = nullptr;
 	float *hostOutPut = nullptr;
@@ -258,7 +258,7 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams,
 	float *workingMem = nullptr;
 	CudaSafeCall(cudaMalloc(&workingMem, numberOfXPoints * 2 * sizeof(float)));
 
-	int numBlocks = (BLOCK_SIZE + numberOfXPoints - 1) / numberOfXPoints;
+	unsigned numBlocks = (BLOCK_SIZE + numberOfXPoints - 1) / numberOfXPoints;
 	sloveProblemInstanceDevice<<<numBlocks, BLOCK_SIZE>>>(problemParams, simParams, deviceOutPut, workingMem);
 
 	//copy back the data

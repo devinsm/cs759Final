@@ -25,7 +25,6 @@
 #include <cuda.h>
 
 #define CUDA_ERROR_CHECK //turn on error checking
-#define BLOCK_SIZE 512
 
 template <typename FunctorType>
 struct HeatProblem1d {
@@ -168,7 +167,7 @@ template <typename T>
 __global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, SimulationParams1D simParams,
 																					float *outPut, float* workingMem) {
 	unsigned numCols = numPoints(problemParams, simParams);
-	unsigned column = blockDim.x * blockIdx.x + threadIdx.x;
+	unsigned column = threadIdx.x;
 	if (column >= numCols) {
 		return;
 	}
@@ -247,6 +246,9 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams,
 
 	const unsigned numberOfXPoints = numPoints(problemParams, simParams);
 	const unsigned numberOfMoments = numMoments(simParams);
+	if (numberOfXPoints > 1024) {
+		throw std::runtime_error("Number of discrete points is greater than 1024");
+	}
 
 	const unsigned sizeOfOutPutArray = numberOfMoments * numberOfXPoints;
 
@@ -258,8 +260,7 @@ __host__ float *sloveProblemInstance(HeatProblem1d<T> problemParams,
 	float *workingMem = nullptr;
 	CudaSafeCall(cudaMalloc(&workingMem, numberOfXPoints * 2 * sizeof(float)));
 
-	unsigned numBlocks = (BLOCK_SIZE + numberOfXPoints - 1) / numberOfXPoints;
-	sloveProblemInstanceDevice<<<numBlocks, BLOCK_SIZE>>>(problemParams, simParams, deviceOutPut, workingMem);
+	sloveProblemInstanceDevice<<<1, numberOfXPoints>>>(problemParams, simParams, deviceOutPut, workingMem);
 
 	//copy back the data
 	CudaSafeCall(cudaMemcpy(hostOutPut, deviceOutPut, sizeOfOutPutArray * sizeof(float), cudaMemcpyDeviceToHost));

@@ -84,8 +84,6 @@ than or equal to UINT_MAX + 1.
 
 
 ## Todos
-* Make sure that numeric types are large enough to handle all relevant problems and
-simulation params
 * Add timing code (need to decide what should be included in run time)
 * Change Kernel invocation to only use 1 block
 * Make main ask the user for the initial conditions, boundary conditions, and

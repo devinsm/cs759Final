@@ -13,44 +13,26 @@
 #   https://matplotlib.org/api/animation_api.html
 #   https://matplotlib.org/users/artists.html
 ###############################################################################
+import re
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 ##############################################################################
-# Function which reads data into 2D numpy array of floats. Each row is a moment
-# in time, and each column is a specific loaction.
-# Parameters:
-#   file: string
-#       name of input file
-# Returns:
-#   t: float
-#       time between succesive rows
-#   points: numpy array of floats
-#       the points on the rod which were used in the numerical simulation
-#   data: numpy array of floats
-#       The 2D array of generated temperature values
+# Converts a line of text (floats seperated by a comma and white space), to
+# a numpy array of floats
 ##############################################################################
-def readInput(file):
-    inputFile = open(file)
-    inputLines = inputFile.readlines()
-
-    # Get metadata
-    t = float(inputLines[0])
-
-    # Create numpy array
-    dataList = [line.replace(' ', '') for line in inputLines[1:]]
-    dataList = [line.replace('\n', '') for line in dataList]
-    dataList = [line.split(',') for line in dataList]
-    dataList = [[float(string) for string in line] for line in dataList]
-
-    return t, np.array(dataList[0]), np.array(dataList[1:])
+def toNumpyArray(line):
+    return np.array(re.split(',\s*', line.strip()), dtype=np.single)
 
 ##############################################################################
 # The body of the script
 ##############################################################################
-t, points, data = readInput("euler/cs759Final/smithProblem.txt")
-time = 0.0
+inputFile = open("./smithProblem.txt")
+
+# Get metadata
+t = float(inputFile.readline().strip())
+points = toNumpyArray(inputFile.readline())
 
 fig, ax = plt.subplots()
 line, = ax.plot([], [], 'b-', label="Time: 0.0")
@@ -71,8 +53,9 @@ ax.set_ylim(0,0.1) #after reading the first line of data this will be updated
 # Returns:
 #   line: a tuple containing the line to plot.
 ##############################################################################
-def animate(heatVals):
+def animate(lineFromFile):
     global time
+    heatVals = toNumpyArray(lineFromFile)
     # First update scale of y axis
     # This is necessary since we don't know who big/small the temps are before hand
     ymin, ymax = ax.get_ylim()
@@ -108,5 +91,5 @@ def initFunction():
 
 ##############################################################################
 
-ani = animation.FuncAnimation(fig, animate, data, init_func=initFunction, blit=False, interval=400)
+ani = animation.FuncAnimation(fig, animate, inputFile, init_func=initFunction, blit=False, interval=400)
 plt.show()

@@ -67,8 +67,8 @@ generated file.
 In the following discussion I refer to UINT_MAX which is defined in <cstdint>, and
 is the largest value which can represented by an unsigned int.
 * The number of iterations must be strictly less than UINT_MAX.
-* The ceiling of the length of the rod divided by delta X must be strictly less than
-1024.
+* The ceiling of the length of the rod divided by delta X must be strictly
+less than 1024.
 * The number of temperatures produced in the output of a simulation must be less
 than or equal to UINT_MAX + 1.
 * r, or (deltaT * alpha) / (deltaX^2), must be less than or equal to 1/2.
@@ -85,9 +85,5 @@ than or equal to UINT_MAX + 1.
 
 ## Todos
 * Add timing code (need to decide what should be included in run time)
-* Make main ask the user for the initial conditions, boundary conditions, and
-other necessary parameters
-* Have the simulation script accept the name of the file to read from as a command
-line argument (currently the file name is hard coded)
 * Improve efficiency
 	* Move "workingMem" from global to shared memory

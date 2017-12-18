@@ -14,10 +14,17 @@
 #   https://matplotlib.org/users/artists.html
 ###############################################################################
 import re
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-
+##############################################################################
+# Prints ussage and exits.
+##############################################################################
+def printUsage():
+    print "Usage: " + sys.argv[0] + " fileName [t]"
+    print "t is the real time (in milliseconds) between frames during the animation"
+    exit()
 ##############################################################################
 # Converts a line of text (floats seperated by a comma and white space), to
 # a numpy array of floats
@@ -28,7 +35,22 @@ def toNumpyArray(line):
 ##############################################################################
 # The body of the script
 ##############################################################################
-inputFile = open("./smithProblem.txt")
+if len(sys.argv) != 2 and len(sys.argv) != 3:
+    printUsage()
+if len(sys.argv) == 3:
+    try:
+        delay = float(sys.argv[2])
+    except ValueError:
+        print "ERROR: Couldn't convert " + sys.argv[2] + " to a float"
+        printUsage()
+else:
+    delay = 200
+
+try:
+    inputFile = open(sys.argv[1])
+except IOError:
+    print "ERROR: Couldn't open file " + sys.argv[1]
+    printUsage()
 
 # Get metadata
 t = float(inputFile.readline().strip())
@@ -91,5 +113,5 @@ def initFunction():
 
 ##############################################################################
 
-ani = animation.FuncAnimation(fig, animate, inputFile, init_func=initFunction, blit=False, interval=400)
+ani = animation.FuncAnimation(fig, animate, inputFile, init_func=initFunction, blit=False, interval=delay)
 plt.show()

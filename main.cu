@@ -7,13 +7,13 @@
 //C++ include statements
 #include <iostream>
 #include <exception>
+#include <cmath>
 
 //Project specific include statements
 #include "heatEquation.hpp"
 
 //Using statements for convience
-using std::cout;
-using std::endl;
+using namespace std;
 
 struct TestFunctor {
 	int i = 1;
@@ -34,22 +34,44 @@ struct SmithFunctor {
 	};
 };
 
-int main(int argc, char const *argv[]) {
-	HeatProblem1d<SmithFunctor> problem1;
-	problem1.l = 1;
-	problem1.alpha = 1;
-	problem1.leftTemp = 0;
-	problem1.rightTemp = 0;
+struct SineFunctor {
+	const float pi = acos(-1.0);
+	__host__ __device__
+	float operator() (float position) {
+		return 1 + sin(position - pi / 2);
+	};
+};
 
-	SimulationParams1D simParams1;
-	simParams1.deltaX = .1;
-	simParams1.deltaT = .001;
-	simParams1.numIterations = 20;
-	simParams1.periodOfRecordings = 1;
+int main(int argc, char const *argv[]) {
+	HeatProblem1d<SmithFunctor> smithsProblem;
+	smithsProblem.l = 1;
+	smithsProblem.alpha = 1;
+	smithsProblem.leftTemp = 0;
+	smithsProblem.rightTemp = 0;
+
+	HeatProblem1d<SineFunctor> sineProblem;
+	sineProblem.l = acos(-1.0);
+	sineProblem.alpha = 3.352;
+	sineProblem.leftTemp = 0;
+	sineProblem.rightTemp = 2;
+
+	SimulationParams1D superSmallSim;
+	superSmallSim.deltaX = .1;
+	superSmallSim.deltaT = .001;
+	superSmallSim.numIterations = 20;
+	superSmallSim.periodOfRecordings = 1;
+
+	SimulationParams1D mediumSizedSim;
+	mediumSizedSim.deltaX = .01;
+	mediumSizedSim.deltaT = .00001;
+	mediumSizedSim.numIterations = 4000000;
+	mediumSizedSim.periodOfRecordings = 5;
+
 
 	try {
-		sloveProblemInstance(problem1, simParams1, "smithProblem.txt");
-	} catch (std::exception& e) {
+		sloveProblemInstance(smithsProblem, superSmallSim, "smithProblem.txt");
+		sloveProblemInstance(sineProblem, mediumSizedSim, "sineProblem.txt");
+	} catch (exception& e) {
 		cout << "Simulation on line " << __LINE__ - 2 << "threw an exception" << endl;
 		cout << e.what() << endl;
 	}

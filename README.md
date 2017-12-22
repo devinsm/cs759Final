@@ -19,7 +19,7 @@ which will be run on Euler to generate the data.
 1. Run `./generate_data` either via a slurm script or in interactive mode
 1. The generated data is now in a folder called `simData`
 1. In order to copy this data to your local machine you will have to compress it.
-1. Run `zip simData simData`
+1. Run `zip -r simData simData`
 1. After the compression completes, there will be a file called `simData.zip`
 1. Copy `simData.zip` and `animate.py` to your local machine. I
 trust you already have some way you usually copy files back and forth.

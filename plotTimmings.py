@@ -21,5 +21,10 @@ for line in inputFile:
     xpoints.append(point[0])
     ypoints.append(point[1])
 
-print(xpoints)
-print(ypoints)
+plt.xlabel('Number of Time Steps')
+plt.ylabel('Inclusive Time (ms)')
+plt.title('Timming of Solution on Degree 7 Polynomial')
+plt.plot(xpoints, ypoints, 'b-o')
+plt.tight_layout()
+plt.savefig("timmingPlot.pdf")
+plt.clf()

@@ -20,6 +20,7 @@
 
 //Project specific include statements
 #include "errorMacros.hpp"
+#include "cuda_stopwatch.hpp"
 
 //GPU library include statements
 #include <cuda.h>
@@ -233,11 +234,12 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, un
  *@param simParams A struct which describes the parameters used to carry out the simulation.
  *@param fileName Name of the file to which output of simulation will be printed.
  *
+ *@returns The inclusive GPU time.
  *@throws std::runtime_error If the file can't be opened or if the simulation
  *parameters would make the simulation numerically unstable (i.e. r > 1/2).
 */
 template <typename T>
-__host__ void sloveProblemInstance(HeatProblem1d<T> problemParams,
+__host__ float sloveProblemInstance(HeatProblem1d<T> problemParams,
 																		SimulationParams1D simParams, std::string fileName) {
 	if (rVal(problemParams, simParams) > .5) {
 		throw std::runtime_error("r for simulation params is greater than 1/2");
@@ -260,14 +262,19 @@ __host__ void sloveProblemInstance(HeatProblem1d<T> problemParams,
 	float *workingMem = nullptr;
 	CudaSafeCall(cudaMalloc(&workingMem, numberOfXPoints * 2 * sizeof(float)));
 
+	CudaStopwatch inclusiveTime;
+	inclusiveTime.start();
+
 	sloveProblemInstanceDevice<<<1, numberOfXPoints>>>(problemParams, simParams, deviceOutPut, workingMem);
 
 	//copy back the data
 	CudaSafeCall(cudaMemcpy(hostOutPut, deviceOutPut, sizeOfOutPutArray * sizeof(float), cudaMemcpyDeviceToHost));
+	inclusiveTime.stop();
 
 	printOutPut(hostOutPut, problemParams, simParams, fileName);
 
 	delete[] hostOutPut;
 	CudaSafeCall(cudaFree(deviceOutPut));
+	return inclusiveTime.elapsedTime();
 }
 #endif

@@ -2,8 +2,8 @@ import re
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-def printUsage:
-    print("Usage: " argv[0] + " fileName")
+def printUsage():
+    print("Usage: " + argv[0] + " fileName")
 
 if len(sys.argv) != 2:
     printUsage()

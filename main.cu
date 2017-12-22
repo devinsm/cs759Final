@@ -99,7 +99,7 @@ int main(int argc, char const *argv[]) {
 			cout << i << " " << inclusiveTime << endl;
 		}
 	} catch (exception& e) {
-		cout << "Simulation on line " << __LINE__ - 2 << "threw an exception" << endl;
+		cout << "Simulation on line " << __LINE__ - 2 << " threw an exception" << endl;
 		cout << e.what() << endl;
 	}
 	return 0;

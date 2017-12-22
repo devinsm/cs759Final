@@ -77,11 +77,11 @@ int main(int argc, char const *argv[]) {
 	mediumSizedSim.periodOfRecordings = 5;
 
 	//A complex polynomial to use for timming
-	HeatProblem1d<Deg7Poly> timmingProblem;
-	timmingProblem.l = 10.23;
-	timmingProblem.alpha = 4;
-	timmingProblem.leftTemp = 0;
-	timmingProblem.rightTemp = -15.7362;
+	HeatProblem1d<Deg7Poly> strangeProblem;
+	strangeProblem.l = 10.23;
+	strangeProblem.alpha = 4;
+	strangeProblem.leftTemp = 0;
+	strangeProblem.rightTemp = -15.7362;
 	//should use this timming sim with alpha <= 5
 	SimulationParams1D timmingSim;
 	timmingSim.deltaX = .01;
@@ -95,7 +95,7 @@ int main(int argc, char const *argv[]) {
 		for (size_t i = 2; i <= 1 << 24; i <<= 1) {
 			timmingSim.numIterations = i;
 			timmingSim.periodOfRecordings = i / 256 > 1 ? i / 256 : 1; //we will have 257 moments in output for i >= 256
-			float inclusiveTime = sloveProblemInstance(timmingProblem, timmingSim, "simData/sineProblem_" + to_string(i) + ".txt");
+			float inclusiveTime = sloveProblemInstance(sineProblem, timmingSim, "simData/sineProblem_" + to_string(i) + ".txt");
 			cout << i << " " << inclusiveTime << endl;
 		}
 	} catch (exception& e) {

@@ -90,12 +90,12 @@ int main(int argc, char const *argv[]) {
 	timmingSim.periodOfRecordings = 1;
 
 	try {
-		sloveProblemInstance(smithsProblem, superSmallSim, "simData/smithProblem.txt");
-		//sloveProblemInstance(sineProblem, mediumSizedSim, "sineProblem.txt");
+		solveProblemInstance(smithsProblem, superSmallSim, "simData/smithProblem.txt");
+		//solveProblemInstance(sineProblem, mediumSizedSim, "sineProblem.txt");
 		for (size_t i = 2; i <= 1 << 24; i <<= 1) {
 			timmingSim.numIterations = i;
 			timmingSim.periodOfRecordings = i / 256 > 1 ? i / 256 : 1; //we will have 257 moments in output for i >= 256
-			float inclusiveTime = sloveProblemInstance(sineProblem, timmingSim, "simData/sineProblem_" + to_string(i) + ".txt");
+			float inclusiveTime = solveProblemInstance(sineProblem, timmingSim, "simData/sineProblem_" + to_string(i) + ".txt");
 			cout << i << " " << inclusiveTime << endl;
 		}
 	} catch (exception& e) {

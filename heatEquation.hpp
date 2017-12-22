@@ -155,7 +155,7 @@ __host__ void printOutPut(float *outPut, const HeatProblem1d<T>& problemParams,
 }
 
 /**
- *The kernel which is called to actually carry out the simulation. See sloveProblemInstance
+ *The kernel which is called to actually carry out the simulation. See solveProblemInstance
  *for details of what is stored in outPut.
  *
  *@param problemParams A struct which describes the problem being solved.
@@ -165,7 +165,7 @@ __host__ void printOutPut(float *outPut, const HeatProblem1d<T>& problemParams,
  *@param output A pointer to the global memory where the result will be stored.
 */
 template <typename T>
-__global__ void sloveProblemInstanceDevice(HeatProblem1d<T> problemParams, SimulationParams1D simParams,
+__global__ void solveProblemInstanceDevice(HeatProblem1d<T> problemParams, SimulationParams1D simParams,
 																					float *outPut, float* workingMem) {
 	unsigned numCols = numPoints(problemParams, simParams);
 	unsigned column = threadIdx.x;
@@ -239,7 +239,7 @@ __host__ void allocateOutPutMem(float * &devicePointer, float * &hostPointer, un
  *parameters would make the simulation numerically unstable (i.e. r > 1/2).
 */
 template <typename T>
-__host__ float sloveProblemInstance(HeatProblem1d<T> problemParams,
+__host__ float solveProblemInstance(HeatProblem1d<T> problemParams,
 																		SimulationParams1D simParams, std::string fileName) {
 	if (rVal(problemParams, simParams) > .5) {
 		throw std::runtime_error("r for simulation params is greater than 1/2");
@@ -265,7 +265,7 @@ __host__ float sloveProblemInstance(HeatProblem1d<T> problemParams,
 	CudaStopwatch inclusiveTime;
 	inclusiveTime.start();
 
-	sloveProblemInstanceDevice<<<1, numberOfXPoints>>>(problemParams, simParams, deviceOutPut, workingMem);
+	solveProblemInstanceDevice<<<1, numberOfXPoints>>>(problemParams, simParams, deviceOutPut, workingMem);
 
 	//copy back the data
 	CudaSafeCall(cudaMemcpy(hostOutPut, deviceOutPut, sizeOfOutPutArray * sizeof(float), cudaMemcpyDeviceToHost));

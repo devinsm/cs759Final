@@ -22,8 +22,8 @@ import matplotlib.animation as animation
 # Prints ussage and exits.
 ##############################################################################
 def printUsage():
-    print "Usage: " + sys.argv[0] + " fileName [t]"
-    print "t is the real time (in milliseconds) between frames during the animation"
+    print("Usage: " + sys.argv[0] + " fileName [t]")
+    print("t is the real time (in milliseconds) between frames during the animation")
     exit()
 ##############################################################################
 # Converts a line of text (floats seperated by a comma and white space), to
@@ -41,7 +41,7 @@ if len(sys.argv) == 3:
     try:
         delay = float(sys.argv[2])
     except ValueError:
-        print "ERROR: Couldn't convert " + sys.argv[2] + " to a float"
+        print("ERROR: Couldn't convert " + sys.argv[2] + " to a float")
         printUsage()
 else:
     delay = 200
@@ -49,7 +49,7 @@ else:
 try:
     inputFile = open(sys.argv[1])
 except IOError:
-    print "ERROR: Couldn't open file " + sys.argv[1]
+    print("ERROR: Couldn't open file " + sys.argv[1])
     printUsage()
 
 # Get metadata

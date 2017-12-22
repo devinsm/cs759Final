@@ -14,6 +14,7 @@ on your local machine, and you'll need python 2.7 as well as matplotlib
 1. Clone this repository on Euler.
 1. Run `make` in the top level directory of this project (that is to say the
 the directory that this README is in).
+1. Run `mkdir simData`
 1. The generated executable is named `generate_data`. This is the CUDA program
 which will be run on Euler to generate the data.
 1. Run `./generate_data` either via a slurm script or in interactive mode

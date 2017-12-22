@@ -8,6 +8,7 @@
 #include <iostream>
 #include <exception>
 #include <cmath>
+#include <string>
 
 //Project specific include statements
 #include "heatEquation.hpp"
@@ -42,6 +43,14 @@ struct SineFunctor {
 	};
 };
 
+struct Deg7Poly {
+	__host__ __device__
+	float operator() (float position) {
+		float x = (position / 2) - 3;
+		return (x - 3) * (x - 2) * (x - 1) * x * (x + 3) * (x + 2) * (x + 1);
+	};
+};
+
 int main(int argc, char const *argv[]) {
 	HeatProblem1d<SmithFunctor> smithsProblem;
 	smithsProblem.l = 1;
@@ -67,10 +76,28 @@ int main(int argc, char const *argv[]) {
 	mediumSizedSim.numIterations = 4000000;
 	mediumSizedSim.periodOfRecordings = 5;
 
+	//A complex polynomial to use for timming
+	HeatProblem1d<Deg7Poly> timmingProblem;
+	timmingProblem.l = 10.23;
+	timmingProblem.alpha = 4;
+	timmingProblem.leftTemp = 0;
+	timmingProblem.rightTemp = -15.7362;
+	//should use this timming sim with alpha <= 5
+	SimulationParams1D timmingSim;
+	timmingSim.deltaX = .01;
+	timmingSim.deltaT = .00001;
+	timmingSim.numIterations = 2;
+	timmingSim.periodOfRecordings = 1;
 
 	try {
-		sloveProblemInstance(smithsProblem, superSmallSim, "smithProblem.txt");
-		sloveProblemInstance(sineProblem, mediumSizedSim, "sineProblem.txt");
+		sloveProblemInstance(smithsProblem, superSmallSim, "simData/smithProblem.txt");
+		//sloveProblemInstance(sineProblem, mediumSizedSim, "sineProblem.txt");
+		for (size_t i = 2; i <= 1 << 24; i <<= 1) {
+			timmingSim.numIterations = i;
+			timmingSim.periodOfRecordings = i / 256 > 1 ? i / 256 : 1; //we will have 257 moments in output for i >= 256
+			float inclusiveTime = sloveProblemInstance(timmingProblem, timmingSim, "simData/sineProblem_" + to_string(i) + ".txt");
+			cout << i << " " << inclusiveTime << endl;
+		}
 	} catch (exception& e) {
 		cout << "Simulation on line " << __LINE__ - 2 << "threw an exception" << endl;
 		cout << e.what() << endl;

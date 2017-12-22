@@ -58,11 +58,11 @@ int main(int argc, char const *argv[]) {
 	smithsProblem.leftTemp = 0;
 	smithsProblem.rightTemp = 0;
 
-	// HeatProblem1d<SineFunctor> sineProblem;
-	// sineProblem.l = acos(-1.0);
-	// sineProblem.alpha = 3.352;
-	// sineProblem.leftTemp = 0;
-	// sineProblem.rightTemp = 2;
+	HeatProblem1d<SineFunctor> sineProblem;
+	sineProblem.l = acos(-1.0);
+	sineProblem.alpha = 3.352;
+	sineProblem.leftTemp = 0;
+	sineProblem.rightTemp = 2;
 
 	SimulationParams1D superSmallSim;
 	superSmallSim.deltaX = .1;
@@ -76,12 +76,12 @@ int main(int argc, char const *argv[]) {
 	// mediumSizedSim.numIterations = 4000000;
 	// mediumSizedSim.periodOfRecordings = 5;
 
-	//A complex polynomial to use for timming
-	HeatProblem1d<Deg7Poly> strangeProblem;
-	strangeProblem.l = 10.23;
-	strangeProblem.alpha = 4;
-	strangeProblem.leftTemp = 0;
-	strangeProblem.rightTemp = -15.7362;
+	// //A complex polynomial to use for timming
+	// HeatProblem1d<Deg7Poly> strangeProblem;
+	// strangeProblem.l = 10.23;
+	// strangeProblem.alpha = 4;
+	// strangeProblem.leftTemp = 0;
+	// strangeProblem.rightTemp = -15.7362;
 	//should use this timming sim with alpha <= 5
 	SimulationParams1D timmingSim;
 	timmingSim.deltaX = .01;

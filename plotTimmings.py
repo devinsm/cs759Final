@@ -23,7 +23,7 @@ for line in inputFile:
 
 plt.xlabel('Number of Time Steps')
 plt.ylabel('Inclusive Time (ms)')
-plt.title('Timming of Solution on Degree 7 Polynomial')
+plt.title('Timming of Solution')
 plt.plot(xpoints, ypoints, 'b-o')
 plt.tight_layout()
 plt.savefig("timmingPlot.pdf")

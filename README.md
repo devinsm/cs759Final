@@ -1,7 +1,15 @@
 # Final Project for CS 759
 This code numerically approximates solutions to the 1D heat equation. It does so
 using the [Forwards-Time Centered-Space (FTCS)](https://en.wikipedia.org/wiki/FTCS_scheme)
-method.
+method. I chose to use the FTCS method, since it is so conducive to the fine grain parallelism,
+or data level parallelism, that CUDA excels at.
+
+This is because the FTCS method results in a recurrence relation which gives the temperature
+at each point in terms of temperatures at the previous time step. Therefore each CUDA thread
+can be assigned a specific point, and at each time step the threads can simultaneously calculate
+the temperatures at their points.
+
+# The Project Architecture
 
 The simulation really consists of two parts. The first part is a CUDA program
 which actually numerically approximates the solution. This CUDA program, which is
@@ -16,6 +24,81 @@ run on someone's local Linux or Mac machine using Python 2.7.
 The last component of this project is the Python script plotTimmings.py. It uses
 matplotlib to graph the run time of the simulation versus the number of time steps
 for which the simulation performed calculations.
+
+To make building the CUDA program easier, this project includes a Makefile written
+to be run on Euler. It also includes a [SLURM](https://slurm.schedmd.com/) job submission
+script, slurmscript, which was used to run the CUDA simulation on Euler.
+
+# The CUDA Program
+The code which actually carry out the numerical approximation are in heatEquation.hpp.
+In order to numerically approximate the solution to a specific problem, the user of this
+code calls the function solveProblemInstance.
+
+solveProblemInstance takes two structs and a file name. The first struct, of type
+HeatProblem1d, specifies the instance of the heat equation to be solved. That is
+it gives the length of the rod, the thermal diffusivity of the rod (referred to as alpha),
+the boundary conditions, and a functor to calculate the initial temperature at any
+point on the rod. The functor was inspired by Thrust, and the struct type is
+templated to allow for any functor (though it's operator() must take a float and
+return a float).
+
+The second struct is of type SimulationParams1D, and tells the simulation functions
+how the numerical approximation should to be carried out. It contains the difference between points in time, the difference between points in space, and the number of points in time for which the simulation will perform calculations, excluding time t = 0. It
+also includes the number of time steps which are allowed to elapse between writes to
+the output file, stored in the member periodOfRecordings.
+
+To give an explicit example of how the time based simulation parameters interact, let's say
+that difference between points in time is 2, the number of points in time for which the simulation
+will perform calculations (excluding time = 0) is 86, and periodOfRecordings is 3. The
+program will perform calculations at times time = 0, time = 2, time = 4, ..., time = 172.
+The program would write temperatures to the output file at time = 0, time = 6, time = 12, ...,
+time = 168 (since the number of time intervals is not evenly divisible by 3, the temperatures
+at the last time step aren't written to the file).
+
+I chose to pass this information in as structs, because I felt with so many parameters
+(9 to be exact) setting struct members was much more readable then long parameter lists.
+It also made it easy for me to pass the information on to helper functions.
+
+I chose to have two structs since I thought one might want to solve the same problem
+with multiple different simulation parameters (e.g. time step sizes), and decoupling
+the problem from the simulation parameters would better facilitate this.
+
+## main.cu
+main.cu currently does two things. It numerically approximates a problem which I found
+on page 143 of ["The Mathematics of Diffusion" by J. Crank](http://www-eng.lbl.gov/~shuman/NEXT/MATERIALS%26COMPONENTS/Xe_damage/Crank-The-Mathematics-of-Diffusion.pdf). Crank presents the numerical solution to this problem, as was obtained
+using the FTCS method, in table 8.1 on page 389 (though the book is from 1975 and does not
+include code). I used this problem as a quick "sanity check", since I could compare my results
+to those presented by Crank.
+
+main.cu also currently runs some timing code. It finds a solution to the same problem, with
+an increasingly great number of time steps. It outputs the inclusive time taken each time, as
+well as the number of iterations, to stdout. When main.cu is run using slurmscript, this output
+ends up in a file called sbatch.out, which can then be used to generate the timing plot using
+plotTimmings.py.
+
+## Constraints On Inputs
+
+In the following discussion I refer to UINT_MAX which is defined in <cstdint>, and
+is the largest value which can represented by an unsigned int.
+* The number of iterations must be strictly less than UINT_MAX.
+* The ceiling of the length of the rod divided by delta X must be strictly
+less than 1024.
+* The number of temperatures produced in the output of a simulation must be less
+than or equal to UINT_MAX + 1.
+* r, or (deltaT * alpha) / (deltaX^2), must be less than or equal to 1/2.
+
+## Areas for Improvement
+
+In the function solveProblemInstanceDevice, I keep track of the temperatures at
+the previous time step in an array in global memory. Clearly this results in way too
+many trips to global memory, and the array should be in shared memory. I didn't use
+shared memory in the initial development to simplify things, and the course (as well as
+my access to Euler) ended before I got around to fixing it.
+
+Also, it would be good to eliminate the constraint on the number of discrete points used
+in the simulation. This could be done by having some threads be assigned more than one point
+if the number of points is greater than 1024. Again, the course and my access to Euler ended
+before I got around to eliminating that restriction.
 
 # Building and Running
 
